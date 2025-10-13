@@ -1,5 +1,6 @@
 package br.unifor.distrischool.student_service.controller;
 
+import br.unifor.distrischool.student_service.dto.AlunoDTO;
 import br.unifor.distrischool.student_service.model.Aluno;
 import br.unifor.distrischool.student_service.service.AlunoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,32 @@ public class AlunoController {
     private AlunoService alunoService;
 
     @PostMapping
-    public ResponseEntity<Aluno> cadastrar(@RequestBody Aluno aluno) {
+    public ResponseEntity<Aluno> cadastrar(@RequestBody AlunoDTO alunoDTO) {
+        // Converter DTO para entidade
+        Aluno aluno = new Aluno();
+        aluno.setNome(alunoDTO.getNome());
+        aluno.setDataNascimento(alunoDTO.getDataNascimento());
+        aluno.setEndereco(alunoDTO.getEndereco());
+        aluno.setContato(alunoDTO.getContato());
+        aluno.setMatricula(alunoDTO.getMatricula());
+        aluno.setTurma(alunoDTO.getTurma());
+        aluno.setHistoricoAcademicoCriptografado(alunoDTO.getHistoricoAcademico());
+        
         return ResponseEntity.ok(alunoService.salvar(aluno));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Aluno> editar(@PathVariable Long id, @RequestBody Aluno aluno) {
+    public ResponseEntity<Aluno> editar(@PathVariable Long id, @RequestBody AlunoDTO alunoDTO) {
+        // Converter DTO para entidade
+        Aluno aluno = new Aluno();
+        aluno.setNome(alunoDTO.getNome());
+        aluno.setDataNascimento(alunoDTO.getDataNascimento());
+        aluno.setEndereco(alunoDTO.getEndereco());
+        aluno.setContato(alunoDTO.getContato());
+        aluno.setMatricula(alunoDTO.getMatricula());
+        aluno.setTurma(alunoDTO.getTurma());
+        aluno.setHistoricoAcademicoCriptografado(alunoDTO.getHistoricoAcademico());
+        
         return ResponseEntity.ok(alunoService.editar(id, aluno));
     }
 

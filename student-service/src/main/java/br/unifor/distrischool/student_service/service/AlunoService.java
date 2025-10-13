@@ -16,7 +16,7 @@ import java.util.Optional;
 @Service
 public class AlunoService {
     private static final String ALGORITHM = "AES";
-    private static final String SECRET_KEY = "distrischoolkey12"; // 16 chars
+    private static final String SECRET_KEY = "distrischoolky16"; // Exatamente 16 chars
 
     @Autowired
     private AlunoRepository alunoRepository;
