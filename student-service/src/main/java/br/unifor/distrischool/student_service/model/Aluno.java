@@ -1,6 +1,6 @@
 package br.unifor.distrischool.student_service.model;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
