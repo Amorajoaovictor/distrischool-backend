@@ -1,0 +1,153 @@
+{
+  "info": {
+    "name": "Teacher Service API",
+    "description": "API para gestão de professores (CRUD)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "teacher-service-v1"
+  },
+  "item": [
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Verifica se a aplicação está rodando e saudável"
+          },
+          "response": []
+        },
+        {
+          "name": "Actuator Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator",
+              "host": ["{{base_url}}"],
+              "path": ["actuator"]
+            },
+            "description": "Informações sobre a aplicação"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Professores - CRUD",
+      "item": [
+        {
+          "name": "Criar Professor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ana Pereira\",\n  \"qualificacao\": \"Mestrado em Matemática\",\n  \"contato\": \"85991234567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/teachers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "teachers"]
+            },
+            "description": "Cria um novo professor"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Professor por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/teachers/{{teacher_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "teachers", "{{teacher_id}}"]
+            },
+            "description": "Busca um professor específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Editar Professor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ana Pereira - ATUALIZADO\",\n  \"qualificacao\": \"Doutorado em Educação\",\n  \"contato\": \"85999887766\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/teachers/{{teacher_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "teachers", "{{teacher_id}}"]
+            },
+            "description": "Atualiza os dados de um professor existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Professor",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/teachers/{{teacher_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "teachers", "{{teacher_id}}"]
+            },
+            "description": "Remove um professor do sistema (retorna 204 No Content)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Professores - Buscas",
+      "item": [
+        {
+          "name": "Buscar por Nome",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/teachers/nome/Ana",
+              "host": ["{{base_url}}"],
+              "path": ["api", "teachers", "nome", "Ana"]
+            },
+            "description": "Busca professores que contenham o nome especificado"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8083",
+      "type": "string"
+    },
+    {
+      "key": "teacher_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
