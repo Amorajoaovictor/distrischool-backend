@@ -222,4 +222,6 @@ distrischool/
 
 ## 📄 Licença
 
+Repositório: [https://github.com/unifor-online/distrischool](https://github.com/unifor-online/distrischool)
+
 Este projeto é parte de um trabalho acadêmico da UNIFOR.
