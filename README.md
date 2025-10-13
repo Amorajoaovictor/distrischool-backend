@@ -66,7 +66,6 @@ docker-compose down -v
 ### Criar cluster local
 
 ```bash
-```
 kind create cluster --name distrischool
 ```
 
