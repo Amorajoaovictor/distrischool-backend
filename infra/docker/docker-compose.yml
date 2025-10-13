@@ -12,7 +12,9 @@ services:
     networks:
       - distrischool-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
+      # check the specific database created by POSTGRES_DB to avoid
+      # pg_isready defaulting to the user name as database
+      test: ["CMD-SHELL", "pg_isready -U admin -d distrischool"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -46,10 +48,9 @@ services:
     build:
       context: ../../user-service
       dockerfile: Dockerfile
+    env_file:
+      - ../../user-service/.env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/distrischool
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
       PORT: 8080
     ports:
       - "8081:8080"
@@ -65,10 +66,9 @@ services:
     build:
       context: ../../student-service
       dockerfile: Dockerfile
+    env_file:
+      - ../../student-service/.env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/distrischool
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
       PORT: 8080
     ports:
       - "8082:8080"
@@ -84,10 +84,9 @@ services:
     build:
       context: ../../teacher-service
       dockerfile: Dockerfile
+    env_file:
+      - ../../teacher-service/.env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/distrischool
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
       PORT: 8080
     ports:
       - "8083:8080"
@@ -103,10 +102,9 @@ services:
     build:
       context: ../../admin-staff-service
       dockerfile: Dockerfile
+    env_file:
+      - ../../admin-staff-service/.env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/distrischool
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
       PORT: 8080
     ports:
       - "8084:8080"

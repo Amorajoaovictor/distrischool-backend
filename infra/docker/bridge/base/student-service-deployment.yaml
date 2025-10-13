@@ -1,0 +1,49 @@
+#! student-service-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: student-service
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: student-service
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: docker
+            com.docker.compose.service: student-service
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: docker
+                com.docker.compose.service: student-service
+                com.docker.compose.network.distrischool-network: "true"
+        spec:
+            containers:
+                - name: student-service
+                  image: docker-student-service
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: DATABASE_URL
+                      value: "postgresql://admin:admin@postgres:5432/distrischool"
+                    - name: PORT
+                      value: "8080"
+                    - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+                      value: "org.postgresql.Driver"
+                    - name: SPRING_DATASOURCE_PASSWORD
+                      value: "npg_DIVsc3Cz8nqf"
+                    - name: SPRING_DATASOURCE_URL
+                      value: "jdbc:postgresql://ep-plain-frost-adbclguw-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require"
+                    - name: SPRING_DATASOURCE_USERNAME
+                      value: "neondb_owner"
+                    - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+                      value: "update"
+                    - name: SPRING_JPA_SHOW_SQL
+                      value: "true"
+                  ports:
+                    - name: student-se-8080
+                      containerPort: 8080

@@ -1,0 +1,21 @@
+#! teacher-service-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: teacher-service-published
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: teacher-service
+spec:
+    selector:
+        com.docker.compose.project: docker
+        com.docker.compose.service: teacher-service
+    ports:
+        - name: teacher-se-8083
+          port: 8083
+          protocol: TCP
+          targetPort: teacher-se-8080
+
+# check if there is at least one published port

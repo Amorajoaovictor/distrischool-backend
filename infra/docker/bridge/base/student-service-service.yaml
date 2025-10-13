@@ -1,0 +1,21 @@
+#! student-service-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: student-service-published
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: student-service
+spec:
+    selector:
+        com.docker.compose.project: docker
+        com.docker.compose.service: student-service
+    ports:
+        - name: student-se-8082
+          port: 8082
+          protocol: TCP
+          targetPort: student-se-8080
+
+# check if there is at least one published port

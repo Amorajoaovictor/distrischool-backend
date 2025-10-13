@@ -1,0 +1,18 @@
+#! student-service-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: student-service
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: student-service
+spec:
+    selector:
+        com.docker.compose.project: docker
+        com.docker.compose.service: student-service
+    ports:
+        - name: student-se-8080
+          port: 8080
+          targetPort: student-se-8080

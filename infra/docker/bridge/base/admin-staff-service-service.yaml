@@ -1,0 +1,23 @@
+# check if there is at least one published port
+
+#! admin-staff-service-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: admin-staff-service-published
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: admin-staff-service
+spec:
+    selector:
+        com.docker.compose.project: docker
+        com.docker.compose.service: admin-staff-service
+    ports:
+        - name: admin-staf-8084
+          port: 8084
+          protocol: TCP
+          targetPort: admin-staf-8080
+
+# check if there is at least one published port

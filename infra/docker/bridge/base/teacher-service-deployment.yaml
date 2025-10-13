@@ -1,0 +1,45 @@
+#! teacher-service-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: teacher-service
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: teacher-service
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: docker
+            com.docker.compose.service: teacher-service
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: docker
+                com.docker.compose.service: teacher-service
+                com.docker.compose.network.distrischool-network: "true"
+        spec:
+            containers:
+                - name: teacher-service
+                  image: docker-teacher-service
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: DATABASE_URL
+                      value: "postgresql://admin:admin@postgres:5432/distrischool"
+                    - name: PORT
+                      value: "8080"
+                    - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+                      value: "org.postgresql.Driver"
+                    - name: SPRING_DATASOURCE_PASSWORD
+                      value: "admin"
+                    - name: SPRING_DATASOURCE_URL
+                      value: "jdbc:postgresql://postgres:5432/distrischool"
+                    - name: SPRING_DATASOURCE_USERNAME
+                      value: "admin"
+                  ports:
+                    - name: teacher-se-8080
+                      containerPort: 8080

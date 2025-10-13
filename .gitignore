@@ -1,0 +1,6 @@
+# Ignorar arquivo de ambiente local com credenciais
+.env
+**/.env
+
+# Ignore IDE/editor folders
+.idea/

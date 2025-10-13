@@ -1,0 +1,15 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - ../../base
+patches:
+    - path: admin-staff-service-service.yaml
+    - path: kafka-service.yaml
+    - path: postgres-pgdata-persistentVolumeClaim.yaml
+    - path: postgres-service.yaml
+    - path: student-service-service.yaml
+    - path: teacher-service-service.yaml
+    - path: user-service-service.yaml
+    - path: zookeeper-service.yaml

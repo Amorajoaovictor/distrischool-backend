@@ -21,13 +21,6 @@ spec:
         env:
         - name: SPRING_DATASOURCE_URL
           value: jdbc:postgresql://postgres-svc.distrischool.svc.cluster.local:5432/distrischool
-        - name: SPRING_DATASOURCE_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: username
-        - name: SPRING_DATASOURCE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
+        envFrom:
+        - secretRef:
+            name: db-secret

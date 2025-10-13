@@ -1,0 +1,29 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - 0-docker-namespace.yaml
+    - admin-staff-service-deployment.yaml
+    - admin-staff-service-expose.yaml
+    - admin-staff-service-service.yaml
+    - distrischool-network-network-policy.yaml
+    - kafka-deployment.yaml
+    - kafka-expose.yaml
+    - kafka-service.yaml
+    - postgres-deployment.yaml
+    - postgres-expose.yaml
+    - postgres-pgdata-persistentVolumeClaim.yaml
+    - postgres-service.yaml
+    - student-service-deployment.yaml
+    - student-service-expose.yaml
+    - student-service-service.yaml
+    - teacher-service-deployment.yaml
+    - teacher-service-expose.yaml
+    - teacher-service-service.yaml
+    - user-service-deployment.yaml
+    - user-service-expose.yaml
+    - user-service-service.yaml
+    - zookeeper-deployment.yaml
+    - zookeeper-expose.yaml
+    - zookeeper-service.yaml

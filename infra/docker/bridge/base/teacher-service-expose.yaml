@@ -1,0 +1,18 @@
+#! teacher-service-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: teacher-service
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: teacher-service
+spec:
+    selector:
+        com.docker.compose.project: docker
+        com.docker.compose.service: teacher-service
+    ports:
+        - name: teacher-se-8080
+          port: 8080
+          targetPort: teacher-se-8080

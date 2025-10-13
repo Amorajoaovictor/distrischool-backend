@@ -1,0 +1,18 @@
+#! user-service-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: user-service
+    namespace: docker
+    labels:
+        com.docker.compose.project: docker
+        com.docker.compose.service: user-service
+spec:
+    selector:
+        com.docker.compose.project: docker
+        com.docker.compose.service: user-service
+    ports:
+        - name: user-servi-8080
+          port: 8080
+          targetPort: user-servi-8080
