@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "Admin Staff Service API",
+    "description": "API for admin staff management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "admin-staff-service-v1"
+  },
+  "item": [
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Verifica se a aplicação está rodando e saudável"
+          },
+          "response": []
+        },
+        {
+          "name": "Actuator Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator",
+              "host": ["{{base_url}}"],
+              "path": ["actuator"]
+            },
+            "description": "Informações sobre a aplicação"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Staff - CRUD",
+      "item": [
+        {
+          "name": "Criar Admin Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"admin_staff_id\", jsonData.id);",
+                  "    pm.test(\"Admin Staff criado com sucesso\", function () {",
+                  "        pm.expect(jsonData.id).to.exist;",
+                  "    });",
+                  "} else {",
+                  "    pm.test(\"Resposta deve ser 201 Created\", function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Silva\",\n  \"email\": \"admin.silva@example.com\",\n  \"password\": \"secret123\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admins",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admins"]
+            },
+            "description": "Cria um novo membro da equipe administrativa"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Admin Staff por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admins/{{admin_staff_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admins", "{{admin_staff_id}}"]
+            },
+            "description": "Busca um membro da equipe administrativa específico pelo ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Editar Admin Staff",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Silva Atualizado\",\n  \"email\": \"admin.silva.updated@example.com\",\n  \"password\": \"newsecret123\",\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admins/{{admin_staff_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admins", "{{admin_staff_id}}"]
+            },
+            "description": "Atualiza os dados de um membro da equipe administrativa existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Excluir Admin Staff",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admins/{{admin_staff_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admins", "{{admin_staff_id}}"]
+            },
+            "description": "Remove um membro da equipe administrativa do sistema"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Testes de Erro",
+      "item": [
+        {
+          "name": "Buscar ID Inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admins/99999",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admins", "99999"]
+            },
+            "description": "Deve retornar 404 Not Found"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8084",
+      "type": "string"
+    },
+    {
+      "key": "admin_staff_id",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
