@@ -67,6 +67,8 @@ resilience4j:
         slowCallRateThreshold: 80
         slowCallDurationThreshold: 10s
     instances:
+      authServiceCircuitBreaker:
+        baseConfig: default
       userServiceCircuitBreaker:
         baseConfig: default
       studentServiceCircuitBreaker:

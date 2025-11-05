@@ -1,7 +1,11 @@
 package br.unifor.distrischool.student_service.service;
 
+import br.unifor.distrischool.student_service.event.StudentEvent;
+import br.unifor.distrischool.student_service.kafka.StudentEventProducer;
 import br.unifor.distrischool.student_service.model.Aluno;
 import br.unifor.distrischool.student_service.repository.AlunoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,17 +13,22 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.text.Normalizer;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class AlunoService {
+    private static final Logger logger = LoggerFactory.getLogger(AlunoService.class);
     private static final String ALGORITHM = "AES";
     private static final String SECRET_KEY = "distrischoolky16"; // Exatamente 16 chars
 
     @Autowired
     private AlunoRepository alunoRepository;
+    
+    @Autowired
+    private StudentEventProducer studentEventProducer;
 
     public List<Aluno> listarTodos() {
         return alunoRepository.findAll();
@@ -31,7 +40,30 @@ public class AlunoService {
             aluno.setMatricula(gerarMatricula());
         }
         aluno.setHistoricoAcademicoCriptografado(encrypt(aluno.getHistoricoAcademicoCriptografado()));
-        return alunoRepository.save(aluno);
+        
+        // Salva o aluno no banco
+        Aluno savedAluno = alunoRepository.save(aluno);
+        
+        // Gera email institucional
+        String email = gerarEmailInstitucional(savedAluno.getNome(), savedAluno.getMatricula());
+        
+        // Publica evento Kafka para criação de credenciais de autenticação
+        try {
+            StudentEvent event = new StudentEvent(
+                savedAluno.getId(),
+                savedAluno.getNome(),
+                savedAluno.getMatricula(),
+                email,
+                "CREATED"
+            );
+            studentEventProducer.publishStudentEvent(event);
+            logger.info("📤 Evento de criação publicado para aluno: {} ({})", savedAluno.getNome(), email);
+        } catch (Exception e) {
+            logger.error("❌ Erro ao publicar evento Kafka para aluno {}", savedAluno.getId(), e);
+            // Não falha a criação do aluno se o evento falhar
+        }
+        
+        return savedAluno;
     }
 
     public Aluno editar(Long id, Aluno alunoAtualizado) {
@@ -100,5 +132,26 @@ public class AlunoService {
         long count = alunoRepository.count();
         // Formato: 2025001, 2025002, etc.
         return String.format("%d%03d", ano, count + 1);
+    }
+    
+    private String gerarEmailInstitucional(String nomeCompleto, String matricula) {
+        // Remove acentos e caracteres especiais
+        String nome = Normalizer.normalize(nomeCompleto, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "")
+                .toLowerCase()
+                .trim();
+        
+        // Pega primeiro nome e último sobrenome
+        String[] partes = nome.split("\\s+");
+        String primeiroNome = partes[0];
+        String ultimoSobrenome = partes.length > 1 ? partes[partes.length - 1] : "";
+        
+        // Formato: primeiro.ultimo.matricula@unifor.br
+        // Exemplo: maria.silva.2024777@unifor.br
+        if (!ultimoSobrenome.isEmpty()) {
+            return String.format("%s.%s.%s@unifor.br", primeiroNome, ultimoSobrenome, matricula);
+        } else {
+            return String.format("%s.%s@unifor.br", primeiroNome, matricula);
+        }
     }
 }

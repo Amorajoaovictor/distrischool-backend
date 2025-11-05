@@ -1,5 +1,6 @@
 package br.unifor.distrischool.student_service.event;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 public class StudentEvent {
@@ -9,9 +10,21 @@ public class StudentEvent {
     private String matricula;
     private String eventType; // CREATED, UPDATED, DELETED
     private LocalDateTime timestamp;
+    
+    // Campos para integração com auth-service
+    private String email;
+    
+    @JsonProperty("fullName")
+    private String fullName;
+    
+    private String role = "STUDENT";
+    
+    @JsonProperty("externalId")
+    private String externalId;
 
     public StudentEvent() {
         this.timestamp = LocalDateTime.now();
+        this.role = "STUDENT";
     }
 
     public StudentEvent(Long studentId, String nome, String matricula, String eventType) {
@@ -20,6 +33,19 @@ public class StudentEvent {
         this.matricula = matricula;
         this.eventType = eventType;
         this.timestamp = LocalDateTime.now();
+        this.role = "STUDENT";
+    }
+    
+    public StudentEvent(Long studentId, String nome, String matricula, String email, String eventType) {
+        this.studentId = studentId;
+        this.nome = nome;
+        this.fullName = nome;
+        this.matricula = matricula;
+        this.email = email;
+        this.eventType = eventType;
+        this.externalId = studentId != null ? studentId.toString() : null;
+        this.timestamp = LocalDateTime.now();
+        this.role = "STUDENT";
     }
 
     // Getters and Setters
@@ -29,6 +55,9 @@ public class StudentEvent {
 
     public void setStudentId(Long studentId) {
         this.studentId = studentId;
+        if (studentId != null) {
+            this.externalId = studentId.toString();
+        }
     }
 
     public String getNome() {
@@ -37,6 +66,7 @@ public class StudentEvent {
 
     public void setNome(String nome) {
         this.nome = nome;
+        this.fullName = nome;
     }
 
     public String getMatricula() {
@@ -63,12 +93,46 @@ public class StudentEvent {
         this.timestamp = timestamp;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+        this.nome = fullName;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
+
     @Override
     public String toString() {
         return "StudentEvent{" +
                 "studentId=" + studentId +
                 ", nome='" + nome + '\'' +
                 ", matricula='" + matricula + '\'' +
+                ", email='" + email + '\'' +
                 ", eventType='" + eventType + '\'' +
                 ", timestamp=" + timestamp +
                 '}';
