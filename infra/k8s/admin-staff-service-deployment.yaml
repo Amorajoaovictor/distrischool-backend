@@ -24,3 +24,5 @@ spec:
         envFrom:
         - secretRef:
             name: db-secret
+        - name: AUTH_SERVICE_URL
+          value: http://auth-service.distrischool.svc.cluster.local:8080
