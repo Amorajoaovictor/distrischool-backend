@@ -27,8 +27,7 @@ public class Aluno {
     @Column(nullable = false)
     private String turma;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String historicoAcademicoCriptografado;
 
     // Getters e setters
