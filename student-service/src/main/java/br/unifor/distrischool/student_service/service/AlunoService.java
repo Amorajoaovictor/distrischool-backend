@@ -102,6 +102,31 @@ public class AlunoService {
         return alunoRepository.findByTurma(turma);
     }
 
+    /**
+     * Busca o aluno pelo email do usuário logado
+     */
+    public Optional<Aluno> buscarPorEmail() {
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Optional.empty();
+        }
+        
+        String email = authentication.getName(); // Email do usuário logado
+        
+        // Procura o aluno cujo email institucional corresponda
+        List<Aluno> todosAlunos = alunoRepository.findAll();
+        for (Aluno aluno : todosAlunos) {
+            String emailAluno = gerarEmailInstitucional(aluno.getNome(), aluno.getMatricula());
+            if (emailAluno.equalsIgnoreCase(email)) {
+                return Optional.of(aluno);
+            }
+        }
+        
+        return Optional.empty();
+    }
+
     private String encrypt(String value) {
         try {
             Key key = new SecretKeySpec(SECRET_KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);

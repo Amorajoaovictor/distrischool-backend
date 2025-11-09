@@ -37,7 +37,6 @@ public class TeacherService {
                 saved.getId(), 
                 saved.getNome(), 
                 saved.getQualificacao(), 
-                saved.getContato(),
                 email,
                 "CREATED"
             );
@@ -83,7 +82,6 @@ public class TeacherService {
             updated.getId(), 
             updated.getNome(), 
             updated.getQualificacao(), 
-            updated.getContato(), 
             "UPDATED"
         );
         eventProducer.publishTeacherEvent(event);
@@ -106,9 +104,33 @@ public class TeacherService {
             teacher.getId(), 
             teacher.getNome(), 
             teacher.getQualificacao(), 
-            teacher.getContato(), 
             "DELETED"
         );
         eventProducer.publishTeacherEvent(event);
+    }
+
+    /**
+     * Busca o professor pelo email do usuário logado
+     */
+    public java.util.Optional<Teacher> buscarPorEmail() {
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return java.util.Optional.empty();
+        }
+        
+        String email = authentication.getName(); // Email do usuário logado
+        
+        // Procura o professor cujo email institucional corresponda
+        List<Teacher> todosProfessores = repository.findAll();
+        for (Teacher professor : todosProfessores) {
+            String emailProfessor = gerarEmailInstitucional(professor.getNome(), professor.getId());
+            if (emailProfessor.equalsIgnoreCase(email)) {
+                return java.util.Optional.of(professor);
+            }
+        }
+        
+        return java.util.Optional.empty();
     }
 }

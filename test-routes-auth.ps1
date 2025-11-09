@@ -261,7 +261,7 @@ $testCounter++
 
 $allResults += Test-Route -Method "POST" -Endpoint "/api/teachers" `
     -Description "Criar novo professor" -TestNumber $testCounter `
-    -Body @{ nome = "Test Teacher"; qualificacao = "Mestrado"; contato = "85911112222" }
+    -Body @{ nome = "Test Teacher"; matricula = "PROF2025TEST"; qualificacao = "Mestrado"; contato = "85911112222" }
 $testCounter++
 
 $allResults += Test-Route -Method "PUT" -Endpoint "/api/teachers/1" `
@@ -320,7 +320,7 @@ Write-Host "  Rotas INDEFINIDAS (erro/offline): $undefined" -ForegroundColor Yel
 
 # Exportar para arquivo
 $timestamp = Get-Date -Format "yyyy-MM-dd_HHmmss"
-$filename = "route-auth-report_$timestamp.txt"
+$filename = "logs/route-auth-report_$timestamp.txt"
 
 $output = "========================================================================`n"
 $output += "        RELATORIO DE TESTES DE AUTENTICACAO DE ROTAS (VIA GATEWAY)`n"

@@ -7,8 +7,7 @@ public class TeacherEvent {
 
     private Long teacherId;
     private String nome;
-    private String qualificacao;
-    private String contato;
+    private String matricula;
     private String eventType; // CREATED, UPDATED, DELETED
     private LocalDateTime timestamp;
     
@@ -28,22 +27,20 @@ public class TeacherEvent {
         this.role = "TEACHER";
     }
 
-    public TeacherEvent(Long teacherId, String nome, String qualificacao, String contato, String eventType) {
+    public TeacherEvent(Long teacherId, String nome, String matricula, String eventType) {
         this.teacherId = teacherId;
         this.nome = nome;
-        this.qualificacao = qualificacao;
-        this.contato = contato;
+        this.matricula = matricula;
         this.eventType = eventType;
         this.timestamp = LocalDateTime.now();
         this.role = "TEACHER";
     }
     
-    public TeacherEvent(Long teacherId, String nome, String qualificacao, String contato, String email, String eventType) {
+    public TeacherEvent(Long teacherId, String nome, String matricula, String email, String eventType) {
         this.teacherId = teacherId;
         this.nome = nome;
         this.fullName = nome;
-        this.qualificacao = qualificacao;
-        this.contato = contato;
+        this.matricula = matricula;
         this.email = email;
         this.eventType = eventType;
         this.externalId = teacherId != null ? teacherId.toString() : null;
@@ -66,26 +63,18 @@ public class TeacherEvent {
     public String getNome() {
         return nome;
     }
--*********
+
     public void setNome(String nome) {
         this.nome = nome;
         this.fullName = nome;
     }
 
-    public String getQualificacao() {
-        return qualificacao;
+    public String getMatricula() {
+        return matricula;
     }
 
-    public void setQualificacao(String qualificacao) {
-        this.qualificacao = qualificacao;
-    }
-
-    public String getContato() {
-        return contato;
-    }
-
-    public void setContato(String contato) {
-        this.contato = contato;
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
     }
 
     public String getEventType() {
@@ -142,9 +131,8 @@ public class TeacherEvent {
         return "TeacherEvent{" +
                 "teacherId=" + teacherId +
                 ", nome='" + nome + '\'' +
+                ", matricula='" + matricula + '\'' +
                 ", email='" + email + '\'' +
-                ", qualificacao='" + qualificacao + '\'' +
-                ", contato='" + contato + '\'' +
                 ", eventType='" + eventType + '\'' +
                 ", timestamp=" + timestamp +
                 '}';

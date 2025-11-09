@@ -61,6 +61,7 @@ Write-Host "`n[4] TEACHER SERVICE - Criar Novo" -ForegroundColor Cyan
 try {
     $body = @{
         nome = "Professor PowerShell Test"
+        matricula = "PROF2025001"
         qualificacao = "Mestrado em Automacao"
         contato = "85933334444"
     } | ConvertTo-Json
@@ -78,6 +79,7 @@ if ($global:newTeacherId) {
     try {
         $body = @{
             nome = "Professor PowerShell ATUALIZADO"
+            matricula = "PROF2025001"
             qualificacao = "Doutorado em Automacao"
             contato = "85944445555"
         } | ConvertTo-Json
@@ -113,9 +115,9 @@ Start-Sleep -Seconds 1
 Write-Host "`n[7] STUDENT SERVICE - Buscar por ID" -ForegroundColor Cyan
 try {
     $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/1" -Method GET
-    Show-Result "GET /api/alunos/1" $result
+    Show-Result "GET /api/alunos/3" $result
 } catch {
-    Show-Result "GET /api/alunos/1" $null $_.Exception.Message
+    Show-Result "GET /api/alunos/3" $null $_.Exception.Message
 }
 
 Start-Sleep -Seconds 1
