@@ -1,0 +1,170 @@
+﻿========================================================================
+        RELATORIO DE TESTES DE AUTENTICACAO DE ROTAS (VIA GATEWAY)
+        Gerado em: 2025-11-09 17:08:59
+========================================================================
+
+[POST] /api/auth/login
+  Descricao: Login de usuario
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 404
+  Status com Auth: 
+
+[POST] /api/auth/register
+  Descricao: Registro de novo usuario
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 404
+  Status com Auth: 
+
+[POST] /api/auth/validate
+  Descricao: Validacao de token JWT
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 404
+  Status com Auth: 
+
+[POST] /api/auth/refresh
+  Descricao: Refresh de token JWT
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 404
+  Status com Auth: 
+
+[GET] /api/v1/users
+  Descricao: Listar todos os usuarios
+  Requer Auth: NAO
+  Status sem Auth: 200
+  Status com Auth: 
+
+[GET] /api/v1/users/1
+  Descricao: Buscar usuario por ID
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[POST] /api/v1/users
+  Descricao: Criar novo usuario
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[PUT] /api/v1/users/1
+  Descricao: Atualizar usuario existente
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 405
+  Status com Auth: 
+
+[DELETE] /api/v1/users/1
+  Descricao: Deletar usuario
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[GET] /api/alunos
+  Descricao: Listar todos os alunos
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 503
+  Status com Auth: 
+
+[GET] /api/alunos/1
+  Descricao: Buscar aluno por ID
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[POST] /api/alunos
+  Descricao: Criar novo aluno
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[PUT] /api/alunos/1
+  Descricao: Atualizar aluno existente
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[DELETE] /api/alunos/1
+  Descricao: Deletar aluno
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[GET] /api/teachers
+  Descricao: Listar todos os professores
+  Requer Auth: NAO
+  Status sem Auth: 200
+  Status com Auth: 
+
+[GET] /api/teachers/1
+  Descricao: Buscar professor por ID
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[POST] /api/teachers
+  Descricao: Criar novo professor
+  Requer Auth: NAO
+  Status sem Auth: 200
+  Status com Auth: 
+
+[PUT] /api/teachers/1
+  Descricao: Atualizar professor existente
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[DELETE] /api/teachers/1
+  Descricao: Deletar professor
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 404
+  Status com Auth: 
+
+[GET] /api/v1/admins
+  Descricao: Listar todos os administradores
+  Requer Auth: NAO
+  Status sem Auth: 200
+  Status com Auth: 
+
+[GET] /api/v1/admins/1
+  Descricao: Buscar administrador por ID
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[POST] /api/v1/admins
+  Descricao: Criar novo administrador
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[PUT] /api/v1/admins/1
+  Descricao: Atualizar administrador existente
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+[DELETE] /api/v1/admins/1
+  Descricao: Deletar administrador
+  Requer Auth: INDEFINIDO
+  Status sem Auth: 500
+  Status com Auth: 
+
+
+========================================================================
+                           RESUMO
+========================================================================
+  Rotas que REQUEREM autenticacao: 0
+  Rotas PUBLICAS: 4
+  Rotas INDEFINIDAS: 20
+========================================================================
+
+RECOMENDACOES:
+- Rotas marcadas como PUBLICAS podem ser acessadas sem autenticacao
+- Rotas marcadas como REQUER AUTH precisam de token JWT valido
+- Rotas INDEFINIDAS podem estar com erro ou servico offline
+
+PROXIMOS PASSOS:
+1. Revisar cada rota e definir politica de acesso apropriada
+2. Implementar controle de permissoes por tipo de usuario (admin/teacher/student)
+3. Atualizar SecurityConfig em cada servico conforme necessario
+4. Adicionar rota para auth-service no Gateway
+========================================================================
+
