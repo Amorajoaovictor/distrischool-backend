@@ -21,8 +21,8 @@ function Get-AuthToken {
     Write-Host "`n[AUTH] Obtendo token de autenticacao..." -ForegroundColor Cyan
     
     $loginBody = @{
-        username = "admin"
-        password = "admin123"
+        email = "teste.user.2025999@unifor.br"
+        password = "ecfd4e61"
     } | ConvertTo-Json
 
     try {
