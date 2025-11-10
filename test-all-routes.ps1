@@ -1,5 +1,5 @@
 # Script de Teste Completo - Distrischool API Gateway
-# Testa todas as rotas de todos os serviços através do Gateway
+# Testa todas as rotas de todos os serviços através do Gateway com ADMIN
 
 # Carregar System.Web para UrlEncode
 Add-Type -AssemblyName System.Web
@@ -7,8 +7,11 @@ Add-Type -AssemblyName System.Web
 $gatewayUrl = "http://localhost:8080"
 $ErrorActionPreference = "Continue"
 
+# Token ADMIN
+$ADMIN_TOKEN = $null
+
 Write-Host "`n========================================" -ForegroundColor Magenta
-Write-Host "TESTE COMPLETO - DISTRISCHOOL API GATEWAY" -ForegroundColor Magenta
+Write-Host "TESTE COMPLETO - DISTRISCHOOL (ADMIN)" -ForegroundColor Magenta
 Write-Host "========================================`n" -ForegroundColor Magenta
 
 # Função para exibir resultado
@@ -25,6 +28,32 @@ function Show-Result {
     }
 }
 
+# ==================== AUTENTICAÇÃO ====================
+Write-Host "`n[0] AUTENTICAÇÃO ADMIN" -ForegroundColor Cyan
+try {
+    $loginBody = @{
+        email = "admin@distrischool.com"
+        password = "admin123"
+    } | ConvertTo-Json
+    
+    $response = Invoke-RestMethod -Uri "$gatewayUrl/api/auth/login" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $loginBody
+    
+    $ADMIN_TOKEN = $response.token
+    Write-Host "✅ Login ADMIN realizado com sucesso!" -ForegroundColor Green
+    Write-Host "   Token: $($ADMIN_TOKEN.Substring(0, 20))..." -ForegroundColor Gray
+} catch {
+    Write-Host "❌ ERRO: Não foi possível fazer login como ADMIN" -ForegroundColor Red
+    Write-Host "   Erro: $($_.Exception.Message)" -ForegroundColor DarkRed
+    Write-Host "`n⚠️  Para criar um admin, use:" -ForegroundColor Yellow
+    Write-Host "   POST /api/v1/admins" -ForegroundColor Gray
+    exit 1
+}
+
+Start-Sleep -Seconds 1
+
 # ==================== GATEWAY HEALTH ====================
 Write-Host "`n[1] GATEWAY HEALTH CHECK" -ForegroundColor Cyan
 try {
@@ -37,9 +66,10 @@ try {
 Start-Sleep -Seconds 1
 
 # ==================== TEACHER SERVICE ====================
-Write-Host "`n[2] TEACHER SERVICE - Listar Todos" -ForegroundColor Cyan
+Write-Host "`n[2] TEACHER SERVICE - Listar Todos (ADMIN)" -ForegroundColor Cyan
 try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers" -Method GET
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers" -Method GET -Headers $headers
     Show-Result "GET /api/teachers" $result
 } catch {
     Show-Result "GET /api/teachers" $null $_.Exception.Message
@@ -47,17 +77,18 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[3] TEACHER SERVICE - Buscar por ID" -ForegroundColor Cyan
+Write-Host "`n[3] TEACHER SERVICE - Buscar por ID (ADMIN)" -ForegroundColor Cyan
 try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers/4" -Method GET
-    Show-Result "GET /api/teachers/4" $result
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers/1" -Method GET -Headers $headers
+    Show-Result "GET /api/teachers/1" $result
 } catch {
-    Show-Result "GET /api/teachers/4" $null $_.Exception.Message
+    Show-Result "GET /api/teachers/1" $null $_.Exception.Message
 }
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[4] TEACHER SERVICE - Criar Novo" -ForegroundColor Cyan
+Write-Host "`n[4] TEACHER SERVICE - Criar Novo (ADMIN)" -ForegroundColor Cyan
 try {
     $body = @{
         nome = "Professor PowerShell Test"
@@ -65,7 +96,8 @@ try {
         qualificacao = "Mestrado em Automacao"
         contato = "85933334444"
     } | ConvertTo-Json
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers" -Method POST -Body $body -ContentType "application/json"
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers" -Method POST -Body $body -ContentType "application/json" -Headers $headers
     $global:newTeacherId = $result.id
     Show-Result "POST /api/teachers" $result
 } catch {
@@ -74,7 +106,7 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[5] TEACHER SERVICE - Atualizar" -ForegroundColor Cyan
+Write-Host "`n[5] TEACHER SERVICE - Atualizar (ADMIN)" -ForegroundColor Cyan
 if ($global:newTeacherId) {
     try {
         $body = @{
@@ -83,7 +115,8 @@ if ($global:newTeacherId) {
             qualificacao = "Doutorado em Automacao"
             contato = "85944445555"
         } | ConvertTo-Json
-        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers/$global:newTeacherId" -Method PUT -Body $body -ContentType "application/json"
+        $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers/$global:newTeacherId" -Method PUT -Body $body -ContentType "application/json" -Headers $headers
         Show-Result "PUT /api/teachers/$global:newTeacherId" $result
     } catch {
         Show-Result "PUT /api/teachers/$global:newTeacherId" $null $_.Exception.Message
@@ -95,34 +128,29 @@ if ($global:newTeacherId) {
 Start-Sleep -Seconds 1
 
 # ==================== STUDENT SERVICE ====================
-Write-Host "`n[6] STUDENT SERVICE - Listar Todos" -ForegroundColor Cyan
+Write-Host "`n[6] STUDENT SERVICE - Listar Todos (ADMIN)" -ForegroundColor Cyan
 try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos" -Method GET
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos" -Method GET -Headers $headers
     Show-Result "GET /api/alunos" $result
 } catch {
-    Write-Host "⚠️  GET /api/alunos - Circuit Breaker aberto, tentando novamente em 10s..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 10
-    try {
-        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos" -Method GET
-        Show-Result "GET /api/alunos (retry)" $result
-    } catch {
-        Show-Result "GET /api/alunos" $null "Circuit Breaker - Serviço sobrecarregado"
-    }
+    Show-Result "GET /api/alunos" $null $_.Exception.Message
 }
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[7] STUDENT SERVICE - Buscar por ID" -ForegroundColor Cyan
+Write-Host "`n[7] STUDENT SERVICE - Buscar por ID (ADMIN)" -ForegroundColor Cyan
 try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/1" -Method GET
-    Show-Result "GET /api/alunos/3" $result
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/1" -Method GET -Headers $headers
+    Show-Result "GET /api/alunos/1" $result
 } catch {
-    Show-Result "GET /api/alunos/3" $null $_.Exception.Message
+    Show-Result "GET /api/alunos/1" $null $_.Exception.Message
 }
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[8] STUDENT SERVICE - Criar Novo" -ForegroundColor Cyan
+Write-Host "`n[8] STUDENT SERVICE - Criar Novo (ADMIN)" -ForegroundColor Cyan
 try {
     # Matrícula será gerada automaticamente pelo backend
     $body = @{
@@ -133,7 +161,8 @@ try {
         turma = "Turma Test PS"
         historicoAcademico = "Aluno de teste automatizado"
     } | ConvertTo-Json
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos" -Method POST -Body $body -ContentType "application/json"
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos" -Method POST -Body $body -ContentType "application/json" -Headers $headers
     $global:newStudentId = $result.id
     $global:newStudentTurma = "Turma Test PS"
     Show-Result "POST /api/alunos (matricula auto: $($result.matricula))" $result
@@ -143,16 +172,18 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[9] STUDENT SERVICE - Buscar por Turma" -ForegroundColor Cyan
+Write-Host "`n[9] STUDENT SERVICE - Buscar por Turma (ADMIN)" -ForegroundColor Cyan
 if ($global:newStudentTurma) {
     try {
         $turmaEncoded = [System.Web.HttpUtility]::UrlEncode($global:newStudentTurma)
-        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/turma/$turmaEncoded" -Method GET
+        $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/turma/$turmaEncoded" -Method GET -Headers $headers
         Show-Result "GET /api/alunos/turma/$global:newStudentTurma" $result
     } catch {
         Write-Host "⚠️  GET /api/alunos/turma/$global:newStudentTurma - FALHOU (testando 3A)" -ForegroundColor Yellow
         try {
-            $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/turma/3A" -Method GET
+            $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+            $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/turma/3A" -Method GET -Headers $headers
             Show-Result "GET /api/alunos/turma/3A" $result
         } catch {
             Show-Result "GET /api/alunos/turma/3A" $null $_.Exception.Message
@@ -165,9 +196,10 @@ if ($global:newStudentTurma) {
 Start-Sleep -Seconds 1
 
 # ==================== USER SERVICE ====================
-Write-Host "`n[10] USER SERVICE - Listar Todos" -ForegroundColor Cyan
+Write-Host "`n[10] USER SERVICE - Listar Todos (ADMIN)" -ForegroundColor Cyan
 try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/users" -Method GET
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/users" -Method GET -Headers $headers
     Show-Result "GET /api/v1/users" $result
 } catch {
     Show-Result "GET /api/v1/users" $null $_.Exception.Message
@@ -175,7 +207,7 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[11] USER SERVICE - Criar Novo" -ForegroundColor Cyan
+Write-Host "`n[11] USER SERVICE - Criar Novo (ADMIN)" -ForegroundColor Cyan
 try {
     $random = Get-Random -Minimum 1000 -Maximum 9999
     $body = @{
@@ -185,7 +217,8 @@ try {
         role = "STUDENT"
         enabled = $true
     } | ConvertTo-Json
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/users" -Method POST -Body $body -ContentType "application/json"
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/users" -Method POST -Body $body -ContentType "application/json" -Headers $headers
     $global:newUserId = $result.id
     Show-Result "POST /api/v1/users" $result
 } catch {
@@ -194,10 +227,11 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[12] USER SERVICE - Buscar por ID" -ForegroundColor Cyan
+Write-Host "`n[12] USER SERVICE - Buscar por ID (ADMIN)" -ForegroundColor Cyan
 if ($global:newUserId) {
     try {
-        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/users/$global:newUserId" -Method GET
+        $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/users/$global:newUserId" -Method GET -Headers $headers
         Show-Result "GET /api/v1/users/$global:newUserId" $result
     } catch {
         Show-Result "GET /api/v1/users/$global:newUserId" $null $_.Exception.Message
@@ -209,9 +243,10 @@ if ($global:newUserId) {
 Start-Sleep -Seconds 1
 
 # ==================== ADMIN SERVICE ====================
-Write-Host "`n[13] ADMIN SERVICE - Listar Todos" -ForegroundColor Cyan
+Write-Host "`n[13] ADMIN SERVICE - Listar Todos (ADMIN)" -ForegroundColor Cyan
 try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins" -Method GET
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins" -Method GET -Headers $headers
     Show-Result "GET /api/v1/admins" $result
 } catch {
     Show-Result "GET /api/v1/admins" $null $_.Exception.Message
@@ -219,7 +254,7 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[14] ADMIN SERVICE - Criar Novo" -ForegroundColor Cyan
+Write-Host "`n[14] ADMIN SERVICE - Criar Novo (ADMIN)" -ForegroundColor Cyan
 try {
     $random = Get-Random -Minimum 1000 -Maximum 9999
     $body = @{
@@ -228,7 +263,8 @@ try {
         role = "COORDINATOR"
         password = "admin123"
     } | ConvertTo-Json
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins" -Method POST -Body $body -ContentType "application/json"
+    $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins" -Method POST -Body $body -ContentType "application/json" -Headers $headers
     $global:newAdminId = $result.id
     Show-Result "POST /api/v1/admins" $result
 } catch {
@@ -237,10 +273,11 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[15] ADMIN SERVICE - Buscar por ID" -ForegroundColor Cyan
+Write-Host "`n[15] ADMIN SERVICE - Buscar por ID (ADMIN)" -ForegroundColor Cyan
 if ($global:newAdminId) {
     try {
-        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins/$global:newAdminId" -Method GET
+        $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins/$global:newAdminId" -Method GET -Headers $headers
         Show-Result "GET /api/v1/admins/$global:newAdminId" $result
     } catch {
         Show-Result "GET /api/v1/admins/$global:newAdminId" $null $_.Exception.Message
@@ -251,7 +288,7 @@ if ($global:newAdminId) {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[16] ADMIN SERVICE - Atualizar" -ForegroundColor Cyan
+Write-Host "`n[16] ADMIN SERVICE - Atualizar (ADMIN)" -ForegroundColor Cyan
 if ($global:newAdminId) {
     try {
         $random = Get-Random -Minimum 1000 -Maximum 9999
@@ -261,7 +298,8 @@ if ($global:newAdminId) {
             role = "DIRECTOR"
             password = "admin456"
         } | ConvertTo-Json
-        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins/$global:newAdminId" -Method PUT -Body $body -ContentType "application/json"
+        $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
+        $result = Invoke-RestMethod -Uri "$gatewayUrl/api/v1/admins/$global:newAdminId" -Method PUT -Body $body -ContentType "application/json" -Headers $headers
         Show-Result "PUT /api/v1/admins/$global:newAdminId" $result
     } catch {
         Show-Result "PUT /api/v1/admins/$global:newAdminId" $null $_.Exception.Message

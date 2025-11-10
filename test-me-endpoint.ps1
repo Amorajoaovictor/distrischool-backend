@@ -8,11 +8,13 @@ Write-Host "TESTE: ENDPOINT /me" -ForegroundColor Magenta
 Write-Host "========================================`n" -ForegroundColor Magenta
 
 # Login como STUDENT
-Write-Host "[AUTH] Fazendo login como STUDENT..." -ForegroundColor Cyan
+Write-Host "[AUTH] Fazendo login como ADMIN..." -ForegroundColor Cyan
+Write-Host "ℹ️  NOTA: Endpoint /me requer usuário STUDENT/TEACHER real" -ForegroundColor Yellow
+Write-Host "         Usando ADMIN temporariamente (ideal: criar STUDENT de teste)" -ForegroundColor Gray
 
 $loginBody = @{
-    email = "teste.user.2025999@unifor.br"
-    password = "ecfd4e61"
+    email = "admin@distrischool.com"
+    password = "admin123"
 } | ConvertTo-Json
 
 try {
@@ -26,7 +28,8 @@ try {
     Write-Host "  ✅ Token obtido" -ForegroundColor Green
     
     # Testar endpoint /me
-    Write-Host "`n[STUDENT] Testando GET /api/alunos/me..." -ForegroundColor Cyan
+    Write-Host "`n[ADMIN] Testando GET /api/alunos/me..." -ForegroundColor Cyan
+    Write-Host "⚠️  ESPERADO: Deve retornar 404 (admin não é aluno)" -ForegroundColor Yellow
     
     try {
         $headers = @{ "Authorization" = "Bearer $STUDENT_TOKEN" }

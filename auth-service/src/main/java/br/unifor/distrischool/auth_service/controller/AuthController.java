@@ -63,4 +63,15 @@ public class AuthController {
     public ResponseEntity<?> health() {
         return ResponseEntity.ok(Map.of("status", "UP", "service", "auth-service"));
     }
+
+    @PostMapping("/reset-admin")
+    public ResponseEntity<?> resetAdmin() {
+        try {
+            authService.resetAdminUser();
+            return ResponseEntity.ok(Map.of("message", "Admin user reset successfully", "email", "admin@distrischool.com", "password", "admin123"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 }

@@ -111,42 +111,25 @@ function Test-Request {
 
 Write-Host "`n========== FASE 1: AUTENTICACAO ==========" -ForegroundColor Yellow
 
-# Login como ADMIN (assumindo que existe um admin pre-cadastrado)
+# Login como ADMIN (credenciais conhecidas)
 $ADMIN_TOKEN = Get-AuthToken -Email "admin@distrischool.com" -Password "admin123" -Role "ADMIN"
 
-# Login como STUDENT (usando email institucional)
-$STUDENT_TOKEN = Get-AuthToken -Email "teste.user.2025999@unifor.br" -Password "ecfd4e61" -Role "STUDENT"
-
-# Verificar se precisamos criar um professor primeiro
-Write-Host "`n[SETUP] Criando professor de teste..." -ForegroundColor Cyan
-$teacherBody = @{
-    nome = "Professor RBAC Test"
-    matricula = "PROF2025RBAC"
-    qualificacao = "Doutorado em Testes"
-    contato = "85999887766"
+if (-not $ADMIN_TOKEN) {
+    Write-Host "`n❌ ERRO CRÍTICO: Não foi possível autenticar como ADMIN!" -ForegroundColor Red
+    Write-Host "   Execute primeiro: Invoke-RestMethod -Uri 'http://localhost:8080/api/auth/reset-admin' -Method POST" -ForegroundColor Yellow
+    exit 1
 }
 
-try {
-    $teacherResponse = Invoke-RestMethod -Uri "$GATEWAY_URL/api/teachers" `
-        -Method POST `
-        -ContentType "application/json" `
-        -Body ($teacherBody | ConvertTo-Json) `
-        -ErrorAction Stop
-    
-    $TEACHER_ID = $teacherResponse.id
-    Write-Host "✅ Professor criado com ID: $TEACHER_ID" -ForegroundColor Green
-    
-    # Email do professor sera: professor.rbac.prof.PROF2025RBAC@unifor.br
-    # Aguardar criacao de usuario no auth-service via Kafka
-    Write-Host "⏳ Aguardando criacao de usuario via Kafka (5 segundos)..." -ForegroundColor Yellow
-    Start-Sleep -Seconds 5
-    
-    # Tentar login como professor
-    $TEACHER_TOKEN = Get-AuthToken -Email "professor.rbac.prof.PROF2025RBAC@unifor.br" -Password "senha_gerada" -Role "TEACHER"
-} catch {
-    Write-Host "⚠️  Nao foi possivel criar professor de teste" -ForegroundColor Yellow
-    Write-Host "   Erro: $($_.Exception.Message)" -ForegroundColor DarkRed
-}
+Write-Host "`nℹ️  NOTA: Para testes completos de RBAC (STUDENT/TEACHER), é necessário:" -ForegroundColor Yellow
+Write-Host "   1. Criar usuários de teste com senhas conhecidas" -ForegroundColor Gray
+Write-Host "   2. Ou modificar o auth-service para permitir definir senha na criação" -ForegroundColor Gray
+Write-Host "`n   Por enquanto, usando apenas ADMIN para todos os testes." -ForegroundColor Yellow
+
+# TODO: Implementar criação de usuários STUDENT e TEACHER com senhas conhecidas
+$STUDENT_TOKEN = $ADMIN_TOKEN
+$TEACHER_TOKEN = $ADMIN_TOKEN
+
+Start-Sleep -Seconds 2
 
 # ========================================================================
 # FASE 2: TESTAR PERMISSOES DE ADMIN

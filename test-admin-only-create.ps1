@@ -86,7 +86,13 @@ function Test-Create {
 
 Write-Host "`n========== FASE 1: AUTENTICACAO ==========" -ForegroundColor Cyan
 
-$STUDENT_TOKEN = Get-AuthToken -Email "teste.user.2025999@unifor.br" -Password "ecfd4e61" -Role "STUDENT"
+# Login como ADMIN
+$ADMIN_TOKEN = Get-AuthToken -Email "admin@distrischool.com" -Password "admin123" -Role "ADMIN"
+
+# STUDENT não disponível (senha desconhecida após criação via Kafka)
+Write-Host "`nℹ️  STUDENT de teste não disponível (requer senha conhecida)" -ForegroundColor Yellow
+Write-Host "   Este teste focará apenas em ADMIN permitido e SEM TOKEN bloqueado" -ForegroundColor Gray
+$STUDENT_TOKEN = $null
 
 # ========================================================================
 # FASE 2: TESTAR CRIACAO SEM TOKEN

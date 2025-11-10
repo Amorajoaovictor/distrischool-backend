@@ -74,13 +74,15 @@ public class UserEventListener {
             return;
         }
 
-        // Generate temporary password
-        String tempPassword = UUID.randomUUID().toString().substring(0, 8);
+        // Use password from event if provided, otherwise generate temporary password
+        String password = (event.getPassword() != null && !event.getPassword().isEmpty()) 
+            ? event.getPassword() 
+            : UUID.randomUUID().toString().substring(0, 8);
         
         User user = new User();
         user.setFullName(event.getFullName());
         user.setEmail(event.getEmail());
-        user.setPassword(passwordEncoder.encode(tempPassword));
+        user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
 
         // Set role
@@ -93,8 +95,13 @@ public class UserEventListener {
 
         userRepository.save(user);
 
-        logger.info("✅ User created successfully: {} with role {} and temp password: {}", 
-                event.getEmail(), roleName, tempPassword);
+        if (event.getPassword() != null && !event.getPassword().isEmpty()) {
+            logger.info("✅ User created successfully: {} with role {} and provided password", 
+                    event.getEmail(), roleName);
+        } else {
+            logger.info("✅ User created successfully: {} with role {} and temp password: {}", 
+                    event.getEmail(), roleName, password);
+        }
         
         // TODO: Send email with temporary password
         // emailService.sendTemporaryPassword(event.getEmail(), tempPassword);

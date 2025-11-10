@@ -30,6 +30,9 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @Column(name = "role", nullable = false)
+    private String role;
+
     @Column(nullable = false)
     private boolean enabled = true;
 
@@ -76,6 +79,9 @@ public class User {
     
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
+    
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
     
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }

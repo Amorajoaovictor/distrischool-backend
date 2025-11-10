@@ -55,10 +55,15 @@ function Test {
 # ==================== AUTENTICAÇÃO ====================
 Write-Host "`n[1] AUTENTICAÇÃO" -ForegroundColor Cyan
 $ADMIN = Login -Email "admin@distrischool.com" -Password "admin123"
-$STUDENT = Login -Email "teste.user.2025999@unifor.br" -Password "ecfd4e61"
+$STUDENT = $null  # TODO: Criar usuário STUDENT de teste primeiro
 
-Write-Host "  ADMIN Token: $(if ($ADMIN) { '✅' } else { '❌ (criar admin primeiro)' })" -ForegroundColor $(if ($ADMIN) { 'Green' } else { 'Red' })
-Write-Host "  STUDENT Token: $(if ($STUDENT) { '✅' } else { '❌' })" -ForegroundColor $(if ($STUDENT) { 'Green' } else { 'Red' })
+Write-Host "  ADMIN Token: $(if ($ADMIN) { '✅ Disponível' } else { '❌ ERRO' })" -ForegroundColor $(if ($ADMIN) { 'Green' } else { 'Red' })
+Write-Host "  STUDENT Token: ⚠️  Não configurado (TODO: criar usuário de teste)" -ForegroundColor Yellow
+
+if (-not $ADMIN) {
+    Write-Host "`n❌ ERRO: Token ADMIN não disponível. Abortando." -ForegroundColor Red
+    exit 1
+}
 
 # ==================== TESTE 1: ADMIN FULL ACCESS ====================
 Write-Host "`n[2] ADMIN - ACESSO TOTAL" -ForegroundColor Cyan

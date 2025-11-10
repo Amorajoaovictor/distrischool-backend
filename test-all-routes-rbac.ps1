@@ -97,12 +97,20 @@ function Test-Endpoint {
 # ==================== FASE 1: AUTENTICAÇÃO ====================
 Write-Host "`n========== FASE 1: AUTENTICAÇÃO ==========" -ForegroundColor Yellow
 
+# Login como ADMIN (sempre disponível)
 $ADMIN_TOKEN = Get-AuthToken -Email "admin@distrischool.com" -Password "admin123" -Role "ADMIN"
-$STUDENT_TOKEN = Get-AuthToken -Email "teste.user.2025999@unifor.br" -Password "ecfd4e61" -Role "STUDENT"
+
+# Nota: Para testar como STUDENT/TEACHER, primeiro é preciso criar esses usuários
+# Por enquanto, usando apenas ADMIN para todos os testes
+$STUDENT_TOKEN = $ADMIN_TOKEN  # TODO: Criar usuário STUDENT de teste
+$TEACHER_TOKEN = $ADMIN_TOKEN  # TODO: Criar usuário TEACHER de teste
 
 if (-not $ADMIN_TOKEN) {
-    Write-Host "`n⚠️  AVISO: Token ADMIN não disponível. Alguns testes serão pulados." -ForegroundColor Yellow
+    Write-Host "`n❌ ERRO: Não foi possível autenticar como ADMIN. Abortando testes." -ForegroundColor Red
+    exit 1
 }
+
+Write-Host "`nℹ️  Usando token ADMIN para todos os testes" -ForegroundColor Yellow
 
 Start-Sleep -Seconds 2
 

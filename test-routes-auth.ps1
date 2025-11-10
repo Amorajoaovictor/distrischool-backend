@@ -18,11 +18,11 @@ Write-Host "========================================`n" -ForegroundColor Magenta
 
 # Funcao para fazer login e obter token
 function Get-AuthToken {
-    Write-Host "`n[AUTH] Obtendo token de autenticacao..." -ForegroundColor Cyan
+    Write-Host "`n[AUTH] Obtendo token de autenticacao (ADMIN)..." -ForegroundColor Cyan
     
     $loginBody = @{
-        email = "teste.user.2025999@unifor.br"
-        password = "ecfd4e61"
+        email = "admin@distrischool.com"
+        password = "admin123"
     } | ConvertTo-Json
 
     try {
@@ -33,7 +33,7 @@ function Get-AuthToken {
             -ErrorAction Stop
         
         if ($response.token) {
-            Write-Host "✅ Token obtido com sucesso" -ForegroundColor Green
+            Write-Host "✅ Token ADMIN obtido com sucesso" -ForegroundColor Green
             return $response.token
         }
     } catch {

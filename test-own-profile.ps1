@@ -7,6 +7,10 @@ Write-Host "`n========================================" -ForegroundColor Magenta
 Write-Host "TESTE: VER PROPRIO PERFIL" -ForegroundColor Magenta
 Write-Host "========================================`n" -ForegroundColor Magenta
 
+Write-Host "ℹ️  NOTA: Este teste requer usuários STUDENT e TEACHER reais." -ForegroundColor Yellow
+Write-Host "         Usando ADMIN para demonstração (retornará 404 em /me)" -ForegroundColor Gray
+Write-Host ""
+
 # Funcao para fazer login
 function Get-AuthToken {
     param([string]$Email, [string]$Password, [string]$Role)
@@ -41,10 +45,13 @@ function Get-AuthToken {
 
 Write-Host "`n========== FASE 1: STUDENT - VER PROPRIO PERFIL ==========" -ForegroundColor Yellow
 
-$STUDENT_TOKEN = Get-AuthToken -Email "teste.user.2025999@unifor.br" -Password "ecfd4e61" -Role "STUDENT"
+# Usando ADMIN (ideal seria ter um STUDENT de teste)
+Write-Host "⚠️  Usando ADMIN (STUDENT de teste não disponível)" -ForegroundColor Yellow
+$STUDENT_TOKEN = Get-AuthToken -Email "admin@distrischool.com" -Password "admin123" -Role "ADMIN"
 
 if ($STUDENT_TOKEN) {
-    Write-Host "`n[STUDENT] Buscando lista de alunos..." -ForegroundColor Cyan
+    Write-Host "`n[ADMIN como STUDENT] Testando GET /api/alunos/me..." -ForegroundColor Cyan
+    Write-Host "   ESPERADO: 404 (admin não é aluno)" -ForegroundColor Gray
     
     try {
         $headers = @{ "Authorization" = "Bearer $STUDENT_TOKEN" }

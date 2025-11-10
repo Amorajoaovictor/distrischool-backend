@@ -8,6 +8,7 @@ public class UserCreatedEvent {
     private String fullName;
     private String role; // STUDENT, TEACHER, ADMIN, PARENT
     private String externalId; // ID do serviço de origem
+    private String password; // Password opcional (usado para admins)
 
     public UserCreatedEvent() {}
 
@@ -29,4 +30,7 @@ public class UserCreatedEvent {
 
     public String getExternalId() { return externalId; }
     public void setExternalId(String externalId) { this.externalId = externalId; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }
