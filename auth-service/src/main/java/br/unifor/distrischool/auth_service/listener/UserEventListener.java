@@ -34,6 +34,9 @@ public class UserEventListener {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private br.unifor.distrischool.auth_service.service.CredentialsFileService credentialsFileService;
+
     @KafkaListener(topics = "student-events", groupId = "auth-service")
     public void handleStudentCreated(String message) {
         try {
@@ -79,11 +82,14 @@ public class UserEventListener {
             ? event.getPassword() 
             : UUID.randomUUID().toString().substring(0, 8);
         
+        boolean passwordGenerated = (event.getPassword() == null || event.getPassword().isEmpty());
+        
         User user = new User();
         user.setFullName(event.getFullName());
         user.setEmail(event.getEmail());
         user.setPassword(passwordEncoder.encode(password));
         user.setEnabled(true);
+        user.setRole(roleName.name()); // Define o campo role (String)
 
         // Set role
         Role role = roleRepository.findByName(roleName)
@@ -94,6 +100,9 @@ public class UserEventListener {
         user.setRoles(roles);
 
         userRepository.save(user);
+
+        // Salva credenciais no arquivo credentials.txt
+        credentialsFileService.saveCredentials(event.getEmail(), password, roleName.name(), passwordGenerated);
 
         if (event.getPassword() != null && !event.getPassword().isEmpty()) {
             logger.info("✅ User created successfully: {} with role {} and provided password", 

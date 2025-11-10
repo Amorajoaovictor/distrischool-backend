@@ -30,6 +30,9 @@ public class AuthService {
     @Autowired
     private br.unifor.distrischool.auth_service.repository.RoleRepository roleRepository;
 
+    @Autowired
+    private CredentialsFileService credentialsFileService;
+
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
@@ -89,5 +92,8 @@ public class AuthService {
         admin.setRoles(java.util.Set.of(adminRole));
 
         userRepository.save(admin);
+        
+        // Salva credenciais resetadas no arquivo
+        credentialsFileService.saveCredentials("admin@distrischool.com", "admin123", "ROLE_ADMIN", false);
     }
 }

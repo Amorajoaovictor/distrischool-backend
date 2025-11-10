@@ -2,5 +2,9 @@
 .env
 **/.env
 
+# Ignorar arquivo de credenciais geradas automaticamente
+credentials.txt
+**/credentials.txt
+
 # Ignore IDE/editor folders
 .idea/

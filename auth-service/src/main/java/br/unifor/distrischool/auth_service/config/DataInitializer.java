@@ -28,6 +28,9 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private br.unifor.distrischool.auth_service.service.CredentialsFileService credentialsFileService;
+
     @Override
     public void run(String... args) throws Exception {
         logger.info("🔧 Starting DataInitializer...");
@@ -62,6 +65,10 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRoles(roles);
             
             userRepository.save(admin);
+            
+            // Salva credenciais do admin no arquivo
+            credentialsFileService.saveCredentials("admin@distrischool.com", "admin123", "ROLE_ADMIN", false);
+            
             logger.info("✅ Default admin created successfully!");
             logger.info("   Email: admin@distrischool.com");
             logger.info("   Password: admin123");
