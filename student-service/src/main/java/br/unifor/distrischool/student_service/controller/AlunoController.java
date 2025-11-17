@@ -18,7 +18,7 @@ public class AlunoController {
     private AlunoService alunoService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     public ResponseEntity<List<Aluno>> listarTodos() {
         return ResponseEntity.ok(alunoService.listarTodos());
     }
@@ -71,7 +71,7 @@ public class AlunoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("@studentPermission.canAccessStudent(#id)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
     public ResponseEntity<Aluno> buscarPorId(@PathVariable Long id) {
         Optional<Aluno> aluno = alunoService.buscarPorId(id);
         return aluno.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

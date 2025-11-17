@@ -37,6 +37,9 @@ public class UserEventListener {
     @Autowired
     private br.unifor.distrischool.auth_service.service.CredentialsFileService credentialsFileService;
 
+    @Autowired
+    private br.unifor.distrischool.auth_service.kafka.UserCreationEventProducer userCreationEventProducer;
+
     @KafkaListener(topics = "student-events", groupId = "auth-service")
     public void handleStudentCreated(String message) {
         try {
@@ -103,6 +106,11 @@ public class UserEventListener {
 
         // Salva credenciais no arquivo credentials.txt
         credentialsFileService.saveCredentials(event.getEmail(), password, roleName.name(), passwordGenerated);
+
+        // Publica evento de criação de usuário no Kafka
+        String username = event.getEmail().split("@")[0]; // Extrai username do email
+        Long externalId = event.getExternalId() != null ? Long.parseLong(event.getExternalId()) : null;
+        userCreationEventProducer.publishUserCreationEvent(event.getEmail(), roleName.name(), username, externalId, password, passwordGenerated);
 
         if (event.getPassword() != null && !event.getPassword().isEmpty()) {
             logger.info("✅ User created successfully: {} with role {} and provided password", 
