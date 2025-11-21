@@ -1,4 +1,4 @@
-package main.java.br.unifor.distrischool.course_service.repository;
+package br.unifor.distrischool.course_service.repository;
 
 import br.unifor.distrischool.course_service.model.Disciplina;
 import org.springframework.data.jpa.repository.JpaRepository;
