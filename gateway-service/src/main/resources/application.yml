@@ -77,6 +77,8 @@ resilience4j:
         baseConfig: default
       adminServiceCircuitBreaker:
         baseConfig: default
+      courseServiceCircuitBreaker:
+        baseConfig: default
 
   timelimiter:
     configs:

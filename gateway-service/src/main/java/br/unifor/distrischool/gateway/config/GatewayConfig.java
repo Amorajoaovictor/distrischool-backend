@@ -77,6 +77,17 @@ public class GatewayConfig {
                                         .setFallbackUri("forward:/fallback/admin")))
                         .uri("http://admin-staff-service:8080"))
 
+                // Course Service Routes - /api/cursos, /api/disciplinas, /api/matriculas, /api/avaliacoes
+                .route("course-service", r -> r
+                        .path("/api/cursos/**", "/api/disciplinas/**", "/api/matriculas/**", "/api/avaliacoes/**")
+                        .filters(f -> f
+                                .stripPrefix(0)
+                                .addRequestHeader("X-Gateway", "Distrischool-Gateway")
+                                .circuitBreaker(config -> config
+                                        .setName("courseServiceCircuitBreaker")
+                                        .setFallbackUri("forward:/fallback/course")))
+                        .uri("http://course-service:8080"))
+
                 // Actuator Routes for all services
                 .route("user-actuator", r -> r
                         .path("/services/user/actuator/**")
@@ -102,6 +113,11 @@ public class GatewayConfig {
                         .path("/services/auth/actuator/**")
                         .filters(f -> f.stripPrefix(2))
                         .uri("http://auth-service:8080"))
+
+                .route("course-actuator", r -> r
+                        .path("/services/course/actuator/**")
+                        .filters(f -> f.stripPrefix(2))
+                        .uri("http://course-service:8080"))
 
                 .build();
     }

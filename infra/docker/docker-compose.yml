@@ -15,6 +15,7 @@ services:
       - student-service
       - teacher-service
       - admin-staff-service
+      - course-service
     networks:
       - distrischool-network
 
@@ -151,6 +152,24 @@ services:
       PORT: 8080
     ports:
       - "8084:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - distrischool-network
+
+  course-service:
+    build:
+      context: ../../course-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../../course-service/.env
+    environment:
+      PORT: 8080
+    ports:
+      - "8086:8080"
     depends_on:
       postgres:
         condition: service_healthy
