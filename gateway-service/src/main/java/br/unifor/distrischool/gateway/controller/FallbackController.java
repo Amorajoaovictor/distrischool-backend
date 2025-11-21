@@ -45,6 +45,12 @@ public class FallbackController {
         return buildFallbackResponse("Admin Staff Service", "Circuit Breaker ativado após 5s de timeout");
     }
 
+    @GetMapping("/course")
+    @PostMapping("/course")
+    public ResponseEntity<Map<String, Object>> courseServiceFallback() {
+        return buildFallbackResponse("Course Service", "Circuit Breaker ativado após 5s de timeout");
+    }
+
     private ResponseEntity<Map<String, Object>> buildFallbackResponse(String serviceName, String details) {
         Map<String, Object> response = new HashMap<>();
         response.put("error", "Service Unavailable");
