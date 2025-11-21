@@ -1,6 +1,8 @@
 package br.unifor.distrischool.course_service.service;
 
 import br.unifor.distrischool.course_service.dto.CursoDTO;
+import br.unifor.distrischool.course_service.event.CourseEvent;
+import br.unifor.distrischool.course_service.kafka.CourseEventProducer;
 import br.unifor.distrischool.course_service.model.Curso;
 import br.unifor.distrischool.course_service.repository.CursoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class CursoService {
     @Autowired
     private CursoRepository cursoRepository;
 
+    @Autowired
+    private CourseEventProducer eventProducer;
+
     @Transactional
     public CursoDTO createCurso(CursoDTO cursoDTO) {
         if (cursoRepository.existsByCodigo(cursoDTO.getCodigo())) {
@@ -24,6 +29,16 @@ public class CursoService {
         
         Curso curso = convertToEntity(cursoDTO);
         Curso savedCurso = cursoRepository.save(curso);
+        
+        // Publicar evento de criação
+        CourseEvent event = new CourseEvent(
+            savedCurso.getId(),
+            savedCurso.getCodigo(),
+            savedCurso.getNome(),
+            "CREATED"
+        );
+        eventProducer.publishCourseEvent(event);
+        
         return convertToDTO(savedCurso);
     }
 
