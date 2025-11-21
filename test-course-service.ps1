@@ -32,8 +32,40 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 2. Criar Curso
-Write-Host "`n[2] CRIAR CURSO" -ForegroundColor Yellow
+# 2. Limpar dados anteriores
+Write-Host "`n[2] LIMPAR DADOS ANTERIORES" -ForegroundColor Yellow
+try {
+    # Listar e deletar avaliacoes
+    $avaliacoes = Invoke-RestMethod -Uri "$gatewayUrl/api/avaliacoes/aluno/1" -Method GET -Headers $headers
+    foreach ($aval in $avaliacoes) {
+        Invoke-RestMethod -Uri "$gatewayUrl/api/avaliacoes/$($aval.id)" -Method DELETE -Headers $headers | Out-Null
+    }
+    
+    # Listar e deletar matriculas
+    $matriculas = Invoke-RestMethod -Uri "$gatewayUrl/api/matriculas/aluno/1" -Method GET -Headers $headers
+    foreach ($mat in $matriculas) {
+        Invoke-RestMethod -Uri "$gatewayUrl/api/matriculas/$($mat.id)" -Method DELETE -Headers $headers | Out-Null
+    }
+    
+    # Listar e deletar disciplinas
+    $cursos = Invoke-RestMethod -Uri "$gatewayUrl/api/cursos" -Method GET -Headers $headers
+    foreach ($c in $cursos) {
+        $discs = Invoke-RestMethod -Uri "$gatewayUrl/api/disciplinas/curso/$($c.id)" -Method GET -Headers $headers
+        foreach ($disc in $discs) {
+            Invoke-RestMethod -Uri "$gatewayUrl/api/disciplinas/$($disc.id)" -Method DELETE -Headers $headers | Out-Null
+        }
+        Invoke-RestMethod -Uri "$gatewayUrl/api/cursos/$($c.id)" -Method DELETE -Headers $headers | Out-Null
+    }
+    
+    Write-Host "PASSOU - Dados anteriores limpos" -ForegroundColor Green
+} catch {
+    Write-Host "AVISO - Nenhum dado anterior para limpar" -ForegroundColor Gray
+}
+
+Start-Sleep -Seconds 1
+
+# 3. Criar Curso
+Write-Host "`n[3] CRIAR CURSO" -ForegroundColor Yellow
 $curso = @{
     nome = "Ciencias da Computacao"
     codigo = "CC001"
@@ -54,8 +86,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 3. Listar Cursos
-Write-Host "`n[3] LISTAR CURSOS" -ForegroundColor Yellow
+# 4. Listar Cursos
+Write-Host "`n[4] LISTAR CURSOS" -ForegroundColor Yellow
 try {
     $cursos = Invoke-RestMethod -Uri "$gatewayUrl/api/cursos" -Method GET -Headers $headers
     Write-Host "PASSOU - Total de cursos: $($cursos.Count)" -ForegroundColor Green
@@ -65,8 +97,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 4. Buscar Curso por ID
-Write-Host "`n[4] BUSCAR CURSO POR ID" -ForegroundColor Yellow
+# 5. Buscar Curso por ID
+Write-Host "`n[5] BUSCAR CURSO POR ID" -ForegroundColor Yellow
 try {
     $cursoGet = Invoke-RestMethod -Uri "$gatewayUrl/api/cursos/$cursoId" -Method GET -Headers $headers
     Write-Host "PASSOU - Curso: $($cursoGet.nome)" -ForegroundColor Green
@@ -76,8 +108,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 5. Criar Disciplina
-Write-Host "`n[5] CRIAR DISCIPLINA" -ForegroundColor Yellow
+# 6. Criar Disciplina
+Write-Host "`n[6] CRIAR DISCIPLINA" -ForegroundColor Yellow
 $disciplina = @{
     nome = "Programacao Orientada a Objetos"
     codigo = "POO001"
@@ -101,8 +133,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 6. Listar Disciplinas do Curso
-Write-Host "`n[6] LISTAR DISCIPLINAS DO CURSO" -ForegroundColor Yellow
+# 7. Listar Disciplinas do Curso
+Write-Host "`n[7] LISTAR DISCIPLINAS DO CURSO" -ForegroundColor Yellow
 try {
     $disciplinas = Invoke-RestMethod -Uri "$gatewayUrl/api/disciplinas/curso/$cursoId" -Method GET -Headers $headers
     Write-Host "PASSOU - Disciplinas do curso: $($disciplinas.Count)" -ForegroundColor Green
@@ -112,8 +144,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 7. Criar Matricula
-Write-Host "`n[7] CRIAR MATRICULA" -ForegroundColor Yellow
+# 8. Criar Matricula
+Write-Host "`n[8] CRIAR MATRICULA" -ForegroundColor Yellow
 $matricula = @{
     alunoId = 1
     disciplinaId = $disciplinaId
@@ -130,8 +162,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 8. Listar Matriculas do Aluno
-Write-Host "`n[8] LISTAR MATRICULAS DO ALUNO" -ForegroundColor Yellow
+# 9. Listar Matriculas do Aluno
+Write-Host "`n[9] LISTAR MATRICULAS DO ALUNO" -ForegroundColor Yellow
 try {
     $matriculas = Invoke-RestMethod -Uri "$gatewayUrl/api/matriculas/aluno/1/ativas" -Method GET -Headers $headers
     Write-Host "PASSOU - Matriculas ativas: $($matriculas.Count)" -ForegroundColor Green
@@ -141,8 +173,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 9. Criar Avaliacao
-Write-Host "`n[9] CRIAR AVALIACAO" -ForegroundColor Yellow
+# 10. Criar Avaliacao
+Write-Host "`n[10] CRIAR AVALIACAO" -ForegroundColor Yellow
 $dataAtual = Get-Date -Format "yyyy-MM-ddTHH:mm:ss"
 $avaliacao = @{
     matriculaId = $matriculaId
@@ -163,8 +195,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 10. Listar Avaliacoes do Aluno
-Write-Host "`n[10] LISTAR AVALIACOES DO ALUNO" -ForegroundColor Yellow
+# 11. Listar Avaliacoes do Aluno
+Write-Host "`n[11] LISTAR AVALIACOES DO ALUNO" -ForegroundColor Yellow
 try {
     $avaliacoes = Invoke-RestMethod -Uri "$gatewayUrl/api/avaliacoes/aluno/1" -Method GET -Headers $headers
     Write-Host "PASSOU - Avaliacoes do aluno: $($avaliacoes.Count)" -ForegroundColor Green
@@ -177,8 +209,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 11. Atualizar Avaliacao
-Write-Host "`n[11] ATUALIZAR AVALIACAO" -ForegroundColor Yellow
+# 12. Atualizar Avaliacao
+Write-Host "`n[12] ATUALIZAR AVALIACAO" -ForegroundColor Yellow
 $avaliacaoUpdate = @{
     matriculaId = $matriculaId
     tipoAvaliacao = "PROVA"
@@ -197,8 +229,8 @@ try {
 
 Start-Sleep -Seconds 1
 
-# 12. Listar Alunos Matriculados (Professor)
-Write-Host "`n[12] LISTAR ALUNOS MATRICULADOS NA DISCIPLINA" -ForegroundColor Yellow
+# 13. Listar Alunos Matriculados (Professor)
+Write-Host "`n[13] LISTAR ALUNOS MATRICULADOS NA DISCIPLINA" -ForegroundColor Yellow
 try {
     $alunosMatriculados = Invoke-RestMethod -Uri "$gatewayUrl/api/matriculas/disciplina/$disciplinaId/ativas" -Method GET -Headers $headers
     Write-Host "PASSOU - Alunos matriculados: $($alunosMatriculados.Count)" -ForegroundColor Green
@@ -207,7 +239,7 @@ try {
 }
 
 Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "RESUMO - 12 testes executados" -ForegroundColor Cyan
+Write-Host "RESUMO - 13 testes executados" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "IDs criados:" -ForegroundColor Yellow
 Write-Host "  Curso: $cursoId" -ForegroundColor Gray
