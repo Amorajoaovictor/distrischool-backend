@@ -29,17 +29,32 @@ public class AlunoService {
     
     @Autowired
     private StudentEventProducer studentEventProducer;
+    
+    @Autowired
+    private CourseValidationService courseValidationService;
 
     public List<Aluno> listarTodos() {
         return alunoRepository.findAll();
     }
 
     public Aluno salvar(Aluno aluno) {
+        // Valida curso via Kafka (assíncrono)
+        if (aluno.getCursoId() != null) {
+            courseValidationService.requestCourseValidation(aluno.getCursoId(), "CREATE_STUDENT");
+            logger.info("Course validation requested for curso: {}", aluno.getCursoId());
+        }
+        
         // Gera matrícula automaticamente se não foi fornecida
         if (aluno.getMatricula() == null || aluno.getMatricula().isEmpty()) {
             aluno.setMatricula(gerarMatricula());
         }
-        aluno.setHistoricoAcademicoCriptografado(encrypt(aluno.getHistoricoAcademicoCriptografado()));
+        
+        // Criptografa histórico acadêmico apenas se não for nulo ou vazio
+        if (aluno.getHistoricoAcademicoCriptografado() != null && !aluno.getHistoricoAcademicoCriptografado().isEmpty()) {
+            aluno.setHistoricoAcademicoCriptografado(encrypt(aluno.getHistoricoAcademicoCriptografado()));
+        } else {
+            aluno.setHistoricoAcademicoCriptografado(encrypt("Historico vazio"));
+        }
         
         // Salva o aluno no banco
         Aluno savedAluno = alunoRepository.save(aluno);
@@ -76,7 +91,12 @@ public class AlunoService {
             aluno.setContato(alunoAtualizado.getContato());
             aluno.setMatricula(alunoAtualizado.getMatricula());
             aluno.setTurma(alunoAtualizado.getTurma());
-            aluno.setHistoricoAcademicoCriptografado(encrypt(alunoAtualizado.getHistoricoAcademicoCriptografado()));
+            
+            // Criptografa histórico apenas se não for nulo ou vazio
+            if (alunoAtualizado.getHistoricoAcademicoCriptografado() != null && !alunoAtualizado.getHistoricoAcademicoCriptografado().isEmpty()) {
+                aluno.setHistoricoAcademicoCriptografado(encrypt(alunoAtualizado.getHistoricoAcademicoCriptografado()));
+            }
+            
             return alunoRepository.save(aluno);
         }
         throw new RuntimeException("Aluno não encontrado");

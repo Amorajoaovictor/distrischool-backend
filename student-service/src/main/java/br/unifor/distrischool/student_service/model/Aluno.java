@@ -27,8 +27,8 @@ public class Aluno {
     @Column(nullable = false)
     private String turma;
 
-    @Column(name = "curso_id", nullable = false, updatable = false)
-    private Long cursoId; // ID do curso - não pode ser alterado após criação
+    @Column(name = "curso_id")
+    private Long cursoId; // ID do curso - referência ao course-service
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String historicoAcademicoCriptografado;

@@ -42,6 +42,7 @@ public class AlunoController {
         aluno.setContato(alunoDTO.getContato());
         aluno.setMatricula(alunoDTO.getMatricula());
         aluno.setTurma(alunoDTO.getTurma());
+        aluno.setCursoId(alunoDTO.getCursoId());
         aluno.setHistoricoAcademicoCriptografado(alunoDTO.getHistoricoAcademico());
         
         return ResponseEntity.ok(alunoService.salvar(aluno));
@@ -58,6 +59,7 @@ public class AlunoController {
         aluno.setContato(alunoDTO.getContato());
         aluno.setMatricula(alunoDTO.getMatricula());
         aluno.setTurma(alunoDTO.getTurma());
+        aluno.setCursoId(alunoDTO.getCursoId());
         aluno.setHistoricoAcademicoCriptografado(alunoDTO.getHistoricoAcademico());
         
         return ResponseEntity.ok(alunoService.editar(id, aluno));
