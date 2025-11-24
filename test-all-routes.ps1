@@ -106,6 +106,25 @@ try {
 
 Start-Sleep -Seconds 1
 
+Write-Host "`n[4.1] TEACHER SERVICE - Test GET /api/alunos as TEACHER" -ForegroundColor Cyan
+try {
+    $loginBody = @{
+        email = "professor.teste.prof.60@unifor.br"
+        password = "77037428"
+    } | ConvertTo-Json
+    $teacherLogin = Invoke-RestMethod -Uri "$gatewayUrl/api/auth/login" -Method POST -Body $loginBody -ContentType "application/json"
+    $TEACHER_TOKEN = $teacherLogin.token
+    $headers = @{ "Authorization" = "Bearer $TEACHER_TOKEN" }
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos" -Method GET -Headers $headers
+    Show-Result "GET /api/alunos (TEACHER)" $result
+
+    # Test GET by ID (13 is an id present in test DB - adjust if needed)
+    $result2 = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/13" -Method GET -Headers $headers
+    Show-Result "GET /api/alunos/13 (TEACHER)" $result2
+} catch {
+    Show-Result "GET /api/alunos (TEACHER)" $null $_.Exception.Message
+}
+
 Write-Host "`n[5] TEACHER SERVICE - Atualizar (ADMIN)" -ForegroundColor Cyan
 if ($global:newTeacherId) {
     try {
