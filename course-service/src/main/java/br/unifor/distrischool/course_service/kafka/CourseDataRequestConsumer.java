@@ -3,7 +3,9 @@ package br.unifor.distrischool.course_service.kafka;
 import br.unifor.distrischool.course_service.dto.AvaliacaoDTO;
 import br.unifor.distrischool.course_service.dto.DisciplinaDTO;
 import br.unifor.distrischool.course_service.dto.MatriculaDTO;
+import br.unifor.distrischool.course_service.model.Curso;
 import br.unifor.distrischool.course_service.service.AvaliacaoService;
+import br.unifor.distrischool.course_service.service.CursoService;
 import br.unifor.distrischool.course_service.service.DisciplinaService;
 import br.unifor.distrischool.course_service.service.MatriculaService;
 import org.slf4j.Logger;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CourseDataRequestConsumer {
@@ -30,6 +33,9 @@ public class CourseDataRequestConsumer {
 
     @Autowired
     private DisciplinaService disciplinaService;
+    
+    @Autowired
+    private CursoService cursoService;
 
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
@@ -46,6 +52,9 @@ public class CourseDataRequestConsumer {
 
         try {
             switch (requestType) {
+                case "GET_CURSO":
+                    handleGetCurso(request, requestedBy);
+                    break;
                 case "GET_MATRICULAS":
                     handleGetMatriculas(request, requestedBy);
                     break;
@@ -71,6 +80,37 @@ public class CourseDataRequestConsumer {
             logger.error("Error processing data request: {}", request, e);
             sendErrorResponse(request, requestedBy, e.getMessage());
         }
+    }
+    
+    private void handleGetCurso(Map<String, Object> request, String requestedBy) {
+        Long cursoId = ((Number) request.get("cursoId")).longValue();
+        String requestId = (String) request.get("requestId");
+        
+        Optional<Curso> cursoOpt = cursoService.getCursoByIdEntity(cursoId);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("requestId", requestId);
+        response.put("requestType", "GET_CURSO");
+        response.put("cursoId", cursoId);
+        
+        if (cursoOpt.isPresent()) {
+            Curso curso = cursoOpt.get();
+            response.put("nome", curso.getNome());
+            response.put("codigo", curso.getCodigo());
+            response.put("modalidade", curso.getModalidade());
+            response.put("turno", curso.getTurno());
+            response.put("duracaoSemestres", curso.getDuracaoSemestres());
+            response.put("status", curso.getStatus());
+            response.put("success", true);
+        } else {
+            response.put("success", false);
+            response.put("error", "Curso não encontrado");
+        }
+        
+        // Envia resposta para o tópico específico do serviço solicitante
+        String responseTopic = "student-curso-responses";
+        kafkaTemplate.send(responseTopic, requestId, response);
+        logger.info("Sent curso data to {}: {}", responseTopic, response);
     }
 
     private void handleGetMatriculas(Map<String, Object> request, String requestedBy) {

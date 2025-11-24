@@ -8,17 +8,78 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class CourseValidationService {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseValidationService.class);
     private static final String VALIDATION_TOPIC = "course-validation-requests";
+    private static final String DATA_REQUEST_TOPIC = "course-data-requests";
+    
+    // Cache temporário para responses do Kafka
+    private final Map<String, Map<String, Object>> responseCache = new ConcurrentHashMap<>();
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public CourseValidationService(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
+    }
+    
+    /**
+     * Busca informações completas de um curso via Kafka request/response
+     */
+    public Map<String, Object> getCursoInfo(Long cursoId) {
+        String requestId = "curso-info-" + cursoId + "-" + System.currentTimeMillis();
+        
+        logger.info("Requesting curso info for cursoId: {} with requestId: {}", cursoId, requestId);
+        
+        Map<String, Object> request = Map.of(
+            "requestId", requestId,
+            "requestType", "GET_CURSO",
+            "cursoId", cursoId,
+            "timestamp", System.currentTimeMillis()
+        );
+        
+        kafkaTemplate.send(DATA_REQUEST_TOPIC, requestId, request);
+        
+        // Aguarda resposta no cache (timeout de 5 segundos)
+        return waitForResponse(requestId, 5000);
+    }
+    
+    /**
+     * Método chamado pelo consumer quando recebe resposta
+     */
+    public void cacheResponse(String requestId, Map<String, Object> data) {
+        logger.info("Caching response for requestId: {}", requestId);
+        responseCache.put(requestId, data);
+    }
+    
+    /**
+     * Aguarda resposta no cache
+     */
+    private Map<String, Object> waitForResponse(String requestId, long timeoutMs) {
+        long startTime = System.currentTimeMillis();
+        
+        while (System.currentTimeMillis() - startTime < timeoutMs) {
+            Map<String, Object> response = responseCache.remove(requestId);
+            if (response != null) {
+                logger.info("Response received for requestId: {}", requestId);
+                return response;
+            }
+            
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                logger.warn("Thread interrupted while waiting for response", e);
+                return null;
+            }
+        }
+        
+        logger.warn("Timeout waiting for response for requestId: {}", requestId);
+        return null;
     }
 
     /**

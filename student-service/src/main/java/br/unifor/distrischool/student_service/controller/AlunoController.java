@@ -1,14 +1,17 @@
 package br.unifor.distrischool.student_service.controller;
 
+import br.unifor.distrischool.student_service.dto.AlunoComCursoDTO;
 import br.unifor.distrischool.student_service.dto.AlunoDTO;
 import br.unifor.distrischool.student_service.model.Aluno;
 import br.unifor.distrischool.student_service.service.AlunoService;
+import br.unifor.distrischool.student_service.service.CourseValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -16,9 +19,12 @@ import java.util.Optional;
 public class AlunoController {
     @Autowired
     private AlunoService alunoService;
+    
+    @Autowired
+    private CourseValidationService courseValidationService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'TEACHER')")
     public ResponseEntity<List<Aluno>> listarTodos() {
         return ResponseEntity.ok(alunoService.listarTodos());
     }
@@ -73,10 +79,48 @@ public class AlunoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT')")
-    public ResponseEntity<Aluno> buscarPorId(@PathVariable Long id) {
-        Optional<Aluno> aluno = alunoService.buscarPorId(id);
-        return aluno.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    @PreAuthorize("hasAnyRole('ADMIN', 'STUDENT', 'TEACHER')")
+    public ResponseEntity<AlunoComCursoDTO> buscarPorId(@PathVariable Long id) {
+        Optional<Aluno> alunoOpt = alunoService.buscarPorId(id);
+        
+        if (alunoOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Aluno aluno = alunoOpt.get();
+        AlunoComCursoDTO dto = convertToAlunoComCursoDTO(aluno);
+        
+        return ResponseEntity.ok(dto);
+    }
+    
+    /**
+     * Converte Aluno para AlunoComCursoDTO, buscando informações do curso via Kafka
+     */
+    private AlunoComCursoDTO convertToAlunoComCursoDTO(Aluno aluno) {
+        AlunoComCursoDTO dto = new AlunoComCursoDTO();
+        dto.setId(aluno.getId());
+        dto.setNome(aluno.getNome());
+        dto.setDataNascimento(aluno.getDataNascimento());
+        dto.setEndereco(aluno.getEndereco());
+        dto.setContato(aluno.getContato());
+        dto.setMatricula(aluno.getMatricula());
+        dto.setTurma(aluno.getTurma());
+        dto.setHistoricoAcademico(aluno.getHistoricoAcademicoCriptografado());
+        dto.setCursoId(aluno.getCursoId());
+        
+        // Busca informações do curso via Kafka se cursoId estiver presente
+        if (aluno.getCursoId() != null) {
+            Map<String, Object> cursoInfo = courseValidationService.getCursoInfo(aluno.getCursoId());
+            
+            if (cursoInfo != null) {
+                dto.setCursoNome((String) cursoInfo.get("nome"));
+                dto.setCursoCodigo((String) cursoInfo.get("codigo"));
+                dto.setCursoModalidade((String) cursoInfo.get("modalidade"));
+                dto.setCursoTurno((String) cursoInfo.get("turno"));
+            }
+        }
+        
+        return dto;
     }
 
     @GetMapping("/matricula/{matricula}")

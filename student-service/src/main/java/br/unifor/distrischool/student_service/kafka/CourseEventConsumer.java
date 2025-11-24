@@ -1,7 +1,9 @@
 package br.unifor.distrischool.student_service.kafka;
 
+import br.unifor.distrischool.student_service.service.CourseValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,9 @@ import java.util.Map;
 public class CourseEventConsumer {
 
     private static final Logger logger = LoggerFactory.getLogger(CourseEventConsumer.class);
+    
+    @Autowired
+    private CourseValidationService courseValidationService;
 
     // Listener para eventos de cursos
     @KafkaListener(topics = "course-events", groupId = "student-service")
@@ -74,6 +79,19 @@ public class CourseEventConsumer {
                 alunoId, event.get("disciplinaId"), event.get("nota"));
             // TODO: Notificar aluno sobre nova nota
             // TODO: Atualizar histórico acadêmico
+        }
+    }
+    
+    // Listener para respostas de dados de curso (topic de response)
+    @KafkaListener(topics = "student-curso-responses", groupId = "student-service")
+    public void consumeCursoDataResponse(Map<String, Object> response) {
+        logger.info("Received curso data response in student-service: {}", response);
+        
+        String requestId = (String) response.get("requestId");
+        
+        if (requestId != null) {
+            // Armazena a resposta no cache do service
+            courseValidationService.cacheResponse(requestId, response);
         }
     }
 }

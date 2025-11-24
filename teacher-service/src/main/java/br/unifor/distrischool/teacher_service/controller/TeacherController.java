@@ -27,7 +27,7 @@ public class TeacherController {
     }
 
     @GetMapping("/me")
-    @PreAuthorize("hasRole('TEACHER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Teacher> getMeuPerfil() {
         // Retorna o perfil do professor logado baseado no email do SecurityContext
         return service.buscarPorEmail()

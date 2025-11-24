@@ -47,6 +47,10 @@ public class CursoService {
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado com ID: " + id));
         return convertToDTO(curso);
     }
+    
+    public java.util.Optional<Curso> getCursoByIdEntity(Long id) {
+        return cursoRepository.findById(id);
+    }
 
     public CursoDTO getCursoByCodigo(String codigo) {
         Curso curso = cursoRepository.findByCodigo(codigo)
