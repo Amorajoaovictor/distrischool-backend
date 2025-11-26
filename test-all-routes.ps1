@@ -80,10 +80,10 @@ Start-Sleep -Seconds 1
 Write-Host "`n[3] TEACHER SERVICE - Buscar por ID (ADMIN)" -ForegroundColor Cyan
 try {
     $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers/1" -Method GET -Headers $headers
-    Show-Result "GET /api/teachers/1" $result
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/teachers/6" -Method GET -Headers $headers
+    Show-Result "GET /api/teachers/6" $result
 } catch {
-    Show-Result "GET /api/teachers/1" $null $_.Exception.Message
+    Show-Result "GET /api/teachers/6" $null $_.Exception.Message
 }
 
 Start-Sleep -Seconds 1
@@ -161,10 +161,10 @@ Start-Sleep -Seconds 1
 Write-Host "`n[7] STUDENT SERVICE - Buscar por ID (ADMIN)" -ForegroundColor Cyan
 try {
     $headers = @{ "Authorization" = "Bearer $ADMIN_TOKEN" }
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/1" -Method GET -Headers $headers
-    Show-Result "GET /api/alunos/1" $result
+    $result = Invoke-RestMethod -Uri "$gatewayUrl/api/alunos/13" -Method GET -Headers $headers
+    Show-Result "GET /api/alunos/13" $result
 } catch {
-    Show-Result "GET /api/alunos/1" $null $_.Exception.Message
+    Show-Result "GET /api/alunos/13" $null $_.Exception.Message
 }
 
 Start-Sleep -Seconds 1
@@ -350,27 +350,7 @@ try {
 
 Start-Sleep -Seconds 1
 
-Write-Host "`n[19] USER SERVICE - Health Check" -ForegroundColor Cyan
-try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/services/user/actuator/health" -Method GET
-    Show-Result "GET /services/user/actuator/health" $result
-} catch {
-    Show-Result "GET /services/user/actuator/health" $null $_.Exception.Message
-}
-
-Start-Sleep -Seconds 1
-
-Write-Host "`n[20] ADMIN SERVICE - Health Check" -ForegroundColor Cyan
-try {
-    $result = Invoke-RestMethod -Uri "$gatewayUrl/services/admin/actuator/health" -Method GET
-    Show-Result "GET /services/admin/actuator/health" $result
-} catch {
-    Show-Result "GET /services/admin/actuator/health" $null $_.Exception.Message
-}
-
-Start-Sleep -Seconds 1
-
-Write-Host "`n[21] GATEWAY - Routes Info" -ForegroundColor Cyan
+Write-Host "`n[19] GATEWAY - Routes Info" -ForegroundColor Cyan
 try {
     $result = Invoke-RestMethod -Uri "$gatewayUrl/actuator/gateway/routes" -Method GET
     Show-Result "GET /actuator/gateway/routes" $result
@@ -382,7 +362,7 @@ try {
 Write-Host "`n========================================" -ForegroundColor Magenta
 Write-Host "RESUMO DOS TESTES" -ForegroundColor Magenta
 Write-Host "========================================" -ForegroundColor Magenta
-Write-Host "Total de testes: 21" -ForegroundColor White
+Write-Host "Total de testes: 19" -ForegroundColor White
 Write-Host "`nIDs criados durante os testes:" -ForegroundColor Yellow
 if ($global:newTeacherId) { Write-Host "  - Teacher ID: $global:newTeacherId" -ForegroundColor Gray }
 if ($global:newStudentId) { Write-Host "  - Student ID: $global:newStudentId" -ForegroundColor Gray }
