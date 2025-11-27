@@ -66,6 +66,11 @@ services:
       - zookeeper
     networks:
       - distrischool-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo > /dev/tcp/kafka/9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth-service:
     build:
@@ -178,9 +183,63 @@ services:
     networks:
       - distrischool-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: distrischool-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - gateway
+      - auth-service
+      - user-service
+      - student-service
+      - teacher-service
+      - admin-staff-service
+      - course-service
+    networks:
+      - distrischool-network
+  grafana:
+    image: grafana/grafana:9.5.0
+    container_name: distrischool-grafana
+    ports:
+      - "3001:3000"  # NOTE: Using host 3001 to avoid conflict with frontend (host uses 3000)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PROVISIONING_PATH=/etc/grafana/provisioning
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - distrischool-network
+
+  # kafka-exporter: optional exporter to expose Kafka metrics. Commented out by default.
+  # To enable, uncomment and provide a known-good image and config for your environment.
+  #kafka-exporter:
+  #  image: <image-for-kafka-exporter>
+  #  container_name: distrischool-kafka-exporter
+  #  environment:
+  #    KAFKA_BROKERS: kafka:9092
+  #  ports:
+  #    - "9308:9308"
+  #  depends_on:
+  #    - kafka
+  #  networks:
+  #    - distrischool-network
+
 volumes:
   pgdata:
+  prometheus-data:
+  grafana-data:
 
 networks:
   distrischool-network:
     driver: bridge
+
+  

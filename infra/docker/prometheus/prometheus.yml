@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'spring-actuators'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['gateway:8080', 'auth-service:8080','user-service:8080','student-service:8080','teacher-service:8080','admin-staff-service:8080','course-service:8080']
+        labels:
+          group: 'distrischool'
+
+  # Kafka exporter not included by default; add a Kafka exporter to scrape broker metrics
+
+  - job_name: 'kafka-exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['kafka-exporter:9308']
+        labels:
+          group: 'infra'
+
+# Alerting (empty for now)
+alerting:
+  alertmanagers: []
