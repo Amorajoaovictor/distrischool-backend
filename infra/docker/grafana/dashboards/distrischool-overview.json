@@ -1,0 +1,54 @@
+{
+  "id": null,
+  "uid": "distrischool-overview",
+  "title": "DistriSchool - Overview",
+  "tags": ["distrischool"],
+  "timezone": "browser",
+  "panels": [
+      {
+        "type": "row",
+        "title": "Application Metrics",
+        "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+        "collapsed": false
+      },
+      {
+        "type": "timeseries",
+        "title": "HTTP Server Requests (count)",
+        "targets": [
+          {
+            "expr": "sum by (job,uri) (increase(http_server_requests_seconds_count[5m]))",
+            "legendFormat": "{{job}} - {{uri}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 }
+      },
+      {
+        "type": "timeseries",
+        "title": "JVM Memory Used (bytes)",
+        "targets": [
+          {
+            "expr": "jvm_memory_used_bytes",
+            "legendFormat": "{{area}} - {{job}}",
+            "refId": "B"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 9 }
+      },
+      {
+        "type": "timeseries",
+        "title": "Process CPU (seconds)",
+        "targets": [
+          {
+            "expr": "process_cpu_seconds_total",
+            "legendFormat": "{{job}}",
+            "refId": "C"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 }
+      }
+    ],
+    "schemaVersion": 36,
+    "version": 1,
+    "refresh": "10s"
+}
