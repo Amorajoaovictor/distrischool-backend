@@ -1,0 +1,214 @@
+﻿{
+    "status":  "success",
+    "data":  {
+                 "activeTargets":  [
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "kafka-exporter:9308",
+                                                                    "__metrics_path__":  "/metrics",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "infra",
+                                                                    "job":  "kafka-exporter"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "infra",
+                                                          "instance":  "kafka-exporter:9308",
+                                                          "job":  "kafka-exporter"
+                                                      },
+                                           "scrapePool":  "kafka-exporter",
+                                           "scrapeUrl":  "http://kafka-exporter:9308/metrics",
+                                           "globalUrl":  "http://kafka-exporter:9308/metrics",
+                                           "lastError":  "Get \"http://kafka-exporter:9308/metrics\": dial tcp: lookup kafka-exporter on 127.0.0.11:53: no such host",
+                                           "lastScrape":  "2025-11-27T14:10:40.287267229Z",
+                                           "lastScrapeDuration":  7.8394502,
+                                           "health":  "down",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "auth-service:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "auth-service:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://auth-service:8080/actuator/prometheus",
+                                           "globalUrl":  "http://auth-service:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:46.431643215Z",
+                                           "lastScrapeDuration":  0.012731894,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "user-service:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "user-service:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://user-service:8080/actuator/prometheus",
+                                           "globalUrl":  "http://user-service:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:39.527750029Z",
+                                           "lastScrapeDuration":  0.027379188,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "student-service:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "student-service:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://student-service:8080/actuator/prometheus",
+                                           "globalUrl":  "http://student-service:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:50.947463624Z",
+                                           "lastScrapeDuration":  0.01206247,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "teacher-service:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "teacher-service:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://teacher-service:8080/actuator/prometheus",
+                                           "globalUrl":  "http://teacher-service:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:51.161735005Z",
+                                           "lastScrapeDuration":  0.009651455,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "admin-staff-service:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "admin-staff-service:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://admin-staff-service:8080/actuator/prometheus",
+                                           "globalUrl":  "http://admin-staff-service:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:49.426389805Z",
+                                           "lastScrapeDuration":  0.01060908,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "course-service:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "course-service:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://course-service:8080/actuator/prometheus",
+                                           "globalUrl":  "http://course-service:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:47.511734278Z",
+                                           "lastScrapeDuration":  0.009336443,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       },
+                                       {
+                                           "discoveredLabels":  {
+                                                                    "__address__":  "gateway:8080",
+                                                                    "__metrics_path__":  "/actuator/prometheus",
+                                                                    "__scheme__":  "http",
+                                                                    "__scrape_interval__":  "15s",
+                                                                    "__scrape_timeout__":  "10s",
+                                                                    "group":  "distrischool",
+                                                                    "job":  "spring-actuators"
+                                                                },
+                                           "labels":  {
+                                                          "group":  "distrischool",
+                                                          "instance":  "gateway:8080",
+                                                          "job":  "spring-actuators"
+                                                      },
+                                           "scrapePool":  "spring-actuators",
+                                           "scrapeUrl":  "http://gateway:8080/actuator/prometheus",
+                                           "globalUrl":  "http://gateway:8080/actuator/prometheus",
+                                           "lastError":  "",
+                                           "lastScrape":  "2025-11-27T14:10:51.212264579Z",
+                                           "lastScrapeDuration":  0.006207708,
+                                           "health":  "up",
+                                           "scrapeInterval":  "15s",
+                                           "scrapeTimeout":  "10s"
+                                       }
+                                   ],
+                 "droppedTargets":  [
+
+                                    ],
+                 "droppedTargetCounts":  {
+                                             "kafka-exporter":  0,
+                                             "spring-actuators":  0
+                                         }
+             }
+}
