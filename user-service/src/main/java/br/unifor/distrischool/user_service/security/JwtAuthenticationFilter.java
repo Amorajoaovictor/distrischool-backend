@@ -63,6 +63,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        // Allow unauthenticated access to Prometheus metrics for internal scraping
+        if ("/actuator/prometheus".equals(path)) {
+            return true;
+        }
+        return false;
+    }
+
     private Map<String, Object> validateTokenWithAuthService(String token) {
         try {
             String authServiceUrl = "http://auth-service:8080/api/auth/validate";
