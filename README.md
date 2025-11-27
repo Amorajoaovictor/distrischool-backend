@@ -206,6 +206,45 @@ Se alguma porta já estiver em uso, edite o arquivo `infra/docker/docker-compose
 ## 🏗️ Estrutura do Projeto
 
 ```
+
+## 📡 Monitoring (Prometheus)
+
+This project includes a Prometheus configuration to scrape Spring Boot Actuator endpoints at `/actuator/prometheus`.
+
+To run Prometheus with the Docker Compose setup:
+
+```powershell
+cd infra/docker
+docker compose up -d prometheus
+```
+
+Open Prometheus at: http://localhost:9090
+
+Open Grafana at: http://localhost:3001 (Grafana uses host port 3001 by default to avoid a conflict with the frontend running on 3000)
+
+The default scrape targets are configured in `infra/docker/prometheus/prometheus.yml` and include all microservices and the gateway. Ensure each service exposes `/actuator/prometheus`. If you added dependencies and configuration to enable the Prometheus endpoint, rebuild the related service images and restart the stack.
+
+If you are running in Kubernetes, apply the Prometheus manifests under `infra/k8s`:
+
+```bash
+kubectl apply -f infra/k8s/prometheus-configmap.yaml
+kubectl apply -f infra/k8s/prometheus-deployment.yaml
+```
+
+Note: Prometheus scrapes `gateway:8080` and other service names within the Docker overlay network; if you need host ports or different service discovery, adjust `prometheus.yml` accordingly.
+
+### Kafka exporter (optional)
+Prometheus doesn't scrape Kafka broker HTTP metrics directly — you need a Kafka exporter (JMX exporter or a dedicated Kafka exporter) to expose broker metrics at an HTTP `/metrics` endpoint. The docker-compose file includes a commented template for a `kafka-exporter` service; to enable it:
+
+1. Uncomment the `kafka-exporter` block in `infra/docker/docker-compose.yml` and replace the `image` with a supported exporter image (e.g., `banzaicloud/kafka-exporter` or `danielqsj/kafka_exporter`) depending on your environment.
+2. Update `infra/docker/prometheus/prometheus.yml` (or `infra/k8s/prometheus-configmap.yaml` for Kubernetes) to point to that exporter job (the compose `prometheus.yml` includes `kafka-exporter` job already).
+3. Run `docker compose up -d --build` to bring up the exporter and Prometheus.
+
+Note: By default the Kafka exporter entry is commented out to avoid failing `docker-compose` when the exporter image isn't available.
+
+### Internal Actuator metrics
+Prometheus scrapes `/actuator/prometheus` within the internal Docker network. For security, these endpoints remain protected from public access. We intentionally skip JWT validation for the `GET /actuator/prometheus` path inside service filters so Prometheus can scrape metrics without a token. If you prefer to require auth for `/actuator/prometheus`, configure Prometheus to use credentials and secure them appropriately (Kubernetes Secrets or a vault) or expose an internal-only ingress.
+
 distrischool/
 ├── admin-staff-service/     # Microserviço de staff administrativo
 ├── student-service/          # Microserviço de alunos

@@ -14,6 +14,8 @@ public class Teacher {
     @NotBlank
     private String nome;
 
+    private String matricula;
+
     private String qualificacao;
 
     private String contato;
@@ -21,8 +23,9 @@ public class Teacher {
     public Teacher() {
     }
 
-    public Teacher(String nome, String qualificacao, String contato) {
+    public Teacher(String nome, String matricula, String qualificacao, String contato) {
         this.nome = nome;
+        this.matricula = matricula;
         this.qualificacao = qualificacao;
         this.contato = contato;
     }
@@ -41,6 +44,14 @@ public class Teacher {
 
     public void setNome(String nome) {
         this.nome = nome;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
     }
 
     public String getQualificacao() {

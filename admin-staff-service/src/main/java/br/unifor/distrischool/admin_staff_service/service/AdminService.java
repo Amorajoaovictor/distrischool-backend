@@ -1,9 +1,13 @@
 package br.unifor.distrischool.admin_staff_service.service;
 
 import br.unifor.distrischool.admin_staff_service.dto.AdminDTO;
+import br.unifor.distrischool.admin_staff_service.event.AdminEvent;
+import br.unifor.distrischool.admin_staff_service.kafka.AdminEventProducer;
 import br.unifor.distrischool.admin_staff_service.model.Admin;
 import br.unifor.distrischool.admin_staff_service.repository.AdminRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,10 +17,14 @@ import java.util.stream.Collectors;
 @Service
 public class AdminService {
 
-    private final AdminRepository adminRepository;
+    private static final Logger logger = LoggerFactory.getLogger(AdminService.class);
 
-    public AdminService(AdminRepository adminRepository) {
+    private final AdminRepository adminRepository;
+    private final AdminEventProducer adminEventProducer;
+
+    public AdminService(AdminRepository adminRepository, AdminEventProducer adminEventProducer) {
         this.adminRepository = adminRepository;
+        this.adminEventProducer = adminEventProducer;
     }
 
     @Transactional
@@ -30,6 +38,23 @@ public class AdminService {
         // admin.setPassword(passwordEncoder.encode(admin.getPassword()));
 
         Admin savedAdmin = adminRepository.save(admin);
+        
+        // Publica evento Kafka para criar credenciais no auth-service
+        try {
+            AdminEvent event = new AdminEvent(
+                savedAdmin.getId(),
+                savedAdmin.getName(),
+                savedAdmin.getEmail(),
+                adminDTO.getPassword(), // Envia senha para auth-service criptografar
+                "CREATED"
+            );
+            adminEventProducer.publishAdminEvent(event);
+            logger.info("📤 Evento de criação publicado para admin: {} ({})", savedAdmin.getName(), savedAdmin.getEmail());
+        } catch (Exception e) {
+            logger.error("❌ Erro ao publicar evento Kafka para admin {}", savedAdmin.getId(), e);
+            // Não falha a criação do admin se o evento falhar
+        }
+        
         return convertToDto(savedAdmin);
     }
 

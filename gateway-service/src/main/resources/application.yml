@@ -67,6 +67,8 @@ resilience4j:
         slowCallRateThreshold: 80
         slowCallDurationThreshold: 10s
     instances:
+      authServiceCircuitBreaker:
+        baseConfig: default
       userServiceCircuitBreaker:
         baseConfig: default
       studentServiceCircuitBreaker:
@@ -75,8 +77,19 @@ resilience4j:
         baseConfig: default
       adminServiceCircuitBreaker:
         baseConfig: default
+      courseServiceCircuitBreaker:
+        baseConfig: default
 
   timelimiter:
     configs:
       default:
-        timeoutDuration: 10s
+        timeoutDuration: 5s
+        cancelRunningFuture: true
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2

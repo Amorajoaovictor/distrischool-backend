@@ -10,10 +10,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
+      - auth-service
       - user-service
       - student-service
       - teacher-service
       - admin-staff-service
+      - course-service
     networks:
       - distrischool-network
 
@@ -52,13 +54,42 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      # Listeners: INTERNAL para containers, EXTERNAL para host
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     ports:
       - "9092:9092"
     depends_on:
       - zookeeper
+    networks:
+      - distrischool-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo > /dev/tcp/kafka/9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ../../auth-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../../auth-service/.env
+    environment:
+      PORT: 8080
+    ports:
+      - "8085:8080"
+    volumes:
+      # Mapeia o credentials.txt para a raiz do projeto no host
+      - ../../credentials.txt:/credentials.txt
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
     networks:
       - distrischool-network
 
@@ -134,9 +165,81 @@ services:
     networks:
       - distrischool-network
 
+  course-service:
+    build:
+      context: ../../course-service
+      dockerfile: Dockerfile
+    env_file:
+      - ../../course-service/.env
+    environment:
+      PORT: 8080
+    ports:
+      - "8086:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - distrischool-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: distrischool-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      - gateway
+      - auth-service
+      - user-service
+      - student-service
+      - teacher-service
+      - admin-staff-service
+      - course-service
+    networks:
+      - distrischool-network
+  grafana:
+    image: grafana/grafana:9.5.0
+    container_name: distrischool-grafana
+    ports:
+      - "3001:3000"  # NOTE: Using host 3001 to avoid conflict with frontend (host uses 3000)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PROVISIONING_PATH=/etc/grafana/provisioning
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - distrischool-network
+
+  # kafka-exporter: optional exporter to expose Kafka metrics. Commented out by default.
+  # To enable, uncomment and provide a known-good image and config for your environment.
+  #kafka-exporter:
+  #  image: <image-for-kafka-exporter>
+  #  container_name: distrischool-kafka-exporter
+  #  environment:
+  #    KAFKA_BROKERS: kafka:9092
+  #  ports:
+  #    - "9308:9308"
+  #  depends_on:
+  #    - kafka
+  #  networks:
+  #    - distrischool-network
+
 volumes:
   pgdata:
+  prometheus-data:
+  grafana-data:
 
 networks:
   distrischool-network:
     driver: bridge
+
+  

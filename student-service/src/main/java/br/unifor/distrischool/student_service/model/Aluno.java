@@ -27,8 +27,10 @@ public class Aluno {
     @Column(nullable = false)
     private String turma;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(name = "curso_id")
+    private Long cursoId; // ID do curso - referência ao course-service
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String historicoAcademicoCriptografado;
 
     // Getters e setters
@@ -46,6 +48,8 @@ public class Aluno {
     public void setMatricula(String matricula) { this.matricula = matricula; }
     public String getTurma() { return turma; }
     public void setTurma(String turma) { this.turma = turma; }
+    public Long getCursoId() { return cursoId; }
+    public void setCursoId(Long cursoId) { this.cursoId = cursoId; }
     public String getHistoricoAcademicoCriptografado() { return historicoAcademicoCriptografado; }
     public void setHistoricoAcademicoCriptografado(String historicoAcademicoCriptografado) { this.historicoAcademicoCriptografado = historicoAcademicoCriptografado; }
 }

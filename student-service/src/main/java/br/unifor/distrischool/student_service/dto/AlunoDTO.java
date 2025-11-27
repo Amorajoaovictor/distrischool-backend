@@ -10,6 +10,7 @@ public class AlunoDTO {
     private String contato;
     private String matricula;
     private String turma;
+    private Long cursoId;
     private String historicoAcademico; // Campo não criptografado para receber do cliente
 
     // Getters e setters
@@ -33,6 +34,9 @@ public class AlunoDTO {
     
     public String getTurma() { return turma; }
     public void setTurma(String turma) { this.turma = turma; }
+    
+    public Long getCursoId() { return cursoId; }
+    public void setCursoId(Long cursoId) { this.cursoId = cursoId; }
     
     public String getHistoricoAcademico() { return historicoAcademico; }
     public void setHistoricoAcademico(String historicoAcademico) { this.historicoAcademico = historicoAcademico; }
