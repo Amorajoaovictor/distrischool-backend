@@ -17,26 +17,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar SSH
+      - name: Configurar SSH (escreve a chave privada)
         run: |
           mkdir -p ~/.ssh
+          # escreve a chave privada (preserva quebras de linha)
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          # known_hosts (opcional: evita prompt)
           touch ~/.ssh/known_hosts
           ssh-keyscan -p $SSH_PORT ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        shell: bash
 
-      - name: Criar pasta no servidor
+      - name: Testar conexão SSH (Whoami + versão do Docker)
         run: |
-          ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
-            "sudo mkdir -p /var/www/distrischool-backend && sudo chown -R \$(whoami):\$(whoami) /var/www/distrischool-backend"
+          set -e
+          echo "Testando conexão SSH..."
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=yes -p $SSH_PORT ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "whoami && id -u && docker --version || true"
+        shell: bash
 
-      - name: Enviar código para o servidor (rsync)
+      - name: Enviar distrischool-backend/ para o servidor (rsync)
         run: |
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT" \
-            ./ \
+            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p $SSH_PORT" \
+            ./distrischool-backend/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/distrischool-backend/
+        shell: bash
 
       - name: Deploy remoto (docker compose)
         run: |
@@ -44,9 +49,9 @@ jobs:
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
               cd /var/www/distrischool-backend/ || exit 2
 
-              # ENTRE NO DIRETÓRIO DO DOCKER COMPOSE
               cd infra/docker || exit 3
 
-              docker compose down || true
-              docker compose up -d --build
+              docker-compose down || true
+              docker-compose up -d --build
             "
+
