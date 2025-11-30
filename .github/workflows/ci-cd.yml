@@ -17,46 +17,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar SSH (escreve a chave privada)
+      - name: Configurar SSH
         run: |
           mkdir -p ~/.ssh
-          # escreve a chave privada (preserva quebras de linha)
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          # known_hosts (opcional: evita prompt)
           touch ~/.ssh/known_hosts
           ssh-keyscan -p $SSH_PORT ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-        shell: bash
 
-      - name: Testar conexão SSH (Whoami + versão do Docker)
+      - name: Criar pasta no servidor
         run: |
-          set -e
-          echo "Testando conexão SSH..."
-          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=yes -p $SSH_PORT ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "whoami && id -u && docker --version || true"
-        shell: bash
+          ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "sudo mkdir -p /var/www/distrischool-backend && sudo chown -R \$(whoami):\$(whoami) /var/www/distrischool-backend"
 
-      - name: Enviar distrischool-backend/ para o servidor (rsync)
+      - name: Enviar código para o servidor (rsync)
         run: |
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p $SSH_PORT" \
-            ./distrischool-backend/ \
+            -e "ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT" \
+            ./ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/distrischool-backend/
-        shell: bash
 
-      - name: Executar deploy remoto (docker compose)
+      - name: Deploy remoto (docker compose)
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p $SSH_PORT ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            set -e
-            cd /var/www/distrischool-backend/ || exit 2
+          ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+              cd /var/www/distrischool-backend/ || exit 2
 
-            # se usa git no servidor, atualiza; se não, rsync já trouxe os arquivos
-            git pull origin main || true
+              # ENTRE NO DIRETÓRIO DO DOCKER COMPOSE
+              cd infra/docker || exit 3
 
-            # entra no diretório do compose (ajuste se necessário)
-            cd infra/docker/ || true
-
-            # roda os containers (ajuste conforme seu compose)
-            docker compose down || true
-            docker compose up -d --build
-          "
-        shell: bash
+              docker compose down || true
+              docker compose up -d --build
+            "
