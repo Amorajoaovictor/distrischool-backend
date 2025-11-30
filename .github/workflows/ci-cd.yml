@@ -138,13 +138,21 @@ jobs:
 
       - name: Setup SSH agent with GitHub secret
         uses: webfactory/ssh-agent@v0.5.3
+        continue-on-error: true
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Verify SSH agent has the key
+        id: verify_agent
         run: |
           echo "Listing SSH identities loaded into the agent (fingerprint only, no secrets will be printed)"
-          ssh-add -l || true
+          if ssh-add -l >/dev/null 2>&1; then
+            echo "agent_has_key=true" >> $GITHUB_OUTPUT
+            ssh-add -l
+          else
+            echo "agent_has_key=false" >> $GITHUB_OUTPUT
+            echo "No key loaded into the agent. We'll try a fallback (manual)."
+          fi
 
       - name: Add droplet to known_hosts
         run: |
@@ -198,3 +206,26 @@ jobs:
             cd infra/docker/
             docker-compose down
             docker-compose up -d --build
+
+      - name: 'Fallback - load private key into ssh-agent'
+        if: steps.verify_agent.outputs.agent_has_key == 'false'
+        run: |
+          echo "Attempting manual fallback load of SERVER_SSH_KEY into ssh-agent..."
+          # Start ssh-agent in case it isn't running yet
+          eval "$(ssh-agent -s)"
+          # Write secret to a temporary file (do not print it)
+          printf '%s\n' "$SERVER_SSH_KEY" > /tmp/deploy_rsa
+          chmod 600 /tmp/deploy_rsa
+          # Detect OpenSSH format and attempt to convert to PEM if needed
+          if grep -q 'BEGIN OPENSSH PRIVATE KEY' /tmp/deploy_rsa; then
+            echo 'OpenSSH key format detected. Attempting conversion to PEM format...'
+            ssh-keygen -p -f /tmp/deploy_rsa -N "" -m PEM -q || { echo 'Failed to convert OpenSSH key to PEM. If the key is passphrase-protected, remove the passphrase or use a supported format.' >&2; exit 1; }
+          fi
+          # Try to load the key
+          if ssh-add /tmp/deploy_rsa; then
+            echo "Key loaded into agent using fallback path."
+            ssh-add -l
+          else
+            echo "Fallback loading failed: the private key may be encrypted or incompatible with the runner's ssh-add. Please convert the key to PEM, remove passphrase, or use a different key format." >&2
+            exit 1
+          fi
