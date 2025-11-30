@@ -25,9 +25,22 @@ jobs:
       SERVER_HOST: ${{ secrets.SERVER_HOST }}
       SERVER_USER: ${{ secrets.SERVER_USER }}
       SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+      VERBOSE_SSH: ${{ secrets.VERBOSE_SSH }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Safety scan for private keys
+        run: |
+          echo "Scanning repository for possible private key leaks..."
+          set +e
+          git grep -I --line-number -E 'BEGIN (RSA |OPENSSH |)PRIVATE KEY' || true
+          if git grep -I -q -E 'BEGIN (RSA |OPENSSH |)PRIVATE KEY'; then
+            echo "Potential private key found in the repository. Do NOT commit private keys. Remove them and add them as GitHub secrets instead." >&2
+            git grep -I -n -E 'BEGIN (RSA |OPENSSH |)PRIVATE KEY'
+            exit 1
+          fi
+          set -e
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -51,6 +64,18 @@ jobs:
           else
             echo "RUN_TESTS=false" >> $GITHUB_ENV
           fi
+
+      - name: 'Debug - environment presence (non-secret)'
+        if: always()
+        run: |
+          echo "Checking CI env variables presence for debugging..."
+          for v in SPRING_DATASOURCE_URL DB_HOST POSTGRES_DB KAFKA_BOOTSTRAP_SERVERS RUN_TESTS SERVER_HOST SERVER_USER SERVER_PORT SERVER_SSH_KEY VERBOSE_SSH; do
+            if [ -n "${!v}" ]; then
+              echo " - $v: SET"
+            else
+              echo " - $v: NOT SET"
+            fi
+          done
 
       - name: Build and run tests (per module)
         run: |
@@ -95,6 +120,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check deploy secrets presence
+        run: |
+          echo "Checking if deployment secrets are present..."
+          if [ -z "$SERVER_SSH_KEY" ] || [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ]; then
+            echo "Deployment secrets are not all present. Skipping deploy. Set SERVER_SSH_KEY, SERVER_HOST, and SERVER_USER in repository secrets to enable deploy." >&2
+            exit 0
+          else
+            echo "Deployment secrets found. Continuing deploy steps..."
+          fi
+
       - name: Install SSH Key
         if: ${{ env.SERVER_SSH_KEY && env.SERVER_HOST && env.SERVER_USER }}
         run: |
@@ -106,6 +141,11 @@ jobs:
           fi
           printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          # Validate that the key looks like a private key
+          if ! grep -q -E 'BEGIN (RSA |OPENSSH |)PRIVATE KEY' ~/.ssh/id_rsa; then
+            echo "The provided SERVER_SSH_KEY does not look like a private key (BEGIN PRIVATE KEY header missing). Please ensure you pasted the full private key that starts with '-----BEGIN' and ends with '-----END'" >&2
+            exit 1
+          fi
 
       - name: Add droplet to known_hosts
         if: ${{ env.SERVER_SSH_KEY && env.SERVER_HOST && env.SERVER_USER }}
@@ -115,6 +155,28 @@ jobs:
           else
             ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
           fi
+
+      - name: 'Debug - deploy env presence (non-secret)'
+        if: ${{ env.SERVER_SSH_KEY && env.SERVER_HOST && env.SERVER_USER }}
+        run: |
+          echo "Debugging deploy environment variables (safe):"
+          for v in SERVER_HOST SERVER_USER SERVER_PORT SERVER_SSH_KEY VERBOSE_SSH; do
+            if [ -n "${!v}" ]; then
+              echo " - $v: SET"
+            else
+              echo " - $v: NOT SET"
+            fi
+          done
+
+      - name: 'Verbose SSH connectivity test'
+        if: ${{ env.VERBOSE_SSH == 'true' }}
+        run: |
+          echo "Running verbose SSH test (this will output debug info, do not set in PRs unless needed)..."
+          SSH_PORT_ARG=""
+          if [ -n "$SERVER_PORT" ]; then
+            SSH_PORT_ARG="-p $SERVER_PORT"
+          fi
+          ssh -vvv -i ~/.ssh/id_rsa $SSH_PORT_ARG -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 $SERVER_USER@$SERVER_HOST 'echo "SSH OK"; whoami; hostname; id'
 
       - name: Test SSH connectivity
         if: ${{ env.SERVER_SSH_KEY && env.SERVER_HOST && env.SERVER_USER }}
