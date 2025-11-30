@@ -1,52 +1,62 @@
-name: Deploy via SSH
+name: Deploy via SSH (distrischool-backend)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      SSH_PORT: ${{ secrets.SERVER_SSH_PORT || '22' }}
 
     steps:
-      # Baixa o repositório
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Prepara SSH com sua chave OpenSSH
-      - name: Configurar SSH
+      - name: Configurar SSH (escreve a chave privada)
         run: |
           mkdir -p ~/.ssh
+          # escreve a chave privada (preserva quebras de linha)
           echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-
+          # known_hosts (opcional: evita prompt)
           touch ~/.ssh/known_hosts
-          ssh-keyscan -p 22 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p $SSH_PORT ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        shell: bash
 
-      # ENVIA APENAS a pasta do backend para o servidor (AGORA ESTÁ CERTO)
-      - name: Enviar código para o servidor (rsync)
+      - name: Testar conexão SSH (Whoami + versão do Docker)
+        run: |
+          set -e
+          echo "Testando conexão SSH..."
+          ssh -i ~/.ssh/id_ed25519 -o BatchMode=yes -o StrictHostKeyChecking=yes -p $SSH_PORT ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "whoami && id -u && docker --version || true"
+        shell: bash
+
+      - name: Enviar distrischool-backend/ para o servidor (rsync)
         run: |
           rsync -avz --delete \
-            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p $SSH_PORT" \
             ./distrischool-backend/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/distrischool-backend/
+        shell: bash
 
-      # Executa os comandos remotos (docker, build, etc.)
-      - name: Executar comandos remotos
+      - name: Executar deploy remoto (docker compose)
         run: |
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-              set -e
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes -p $SSH_PORT ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            set -e
+            cd /var/www/distrischool-backend/ || exit 2
 
-              cd /var/www/distrischool-backend/
+            # se usa git no servidor, atualiza; se não, rsync já trouxe os arquivos
+            git pull origin main || true
 
-              # Se quiser usar git dentro do servidor, deixe, senão pode apagar
-              git pull || true
+            # entra no diretório do compose (ajuste se necessário)
+            cd infra/docker/ || true
 
-              # Caminho real do teu docker-compose
-              cd infra/docker/
-
-              docker compose down
-              docker compose up -d --build
-            "
+            # roda os containers (ajuste conforme seu compose)
+            docker compose down || true
+            docker compose up -d --build
+          "
+        shell: bash
