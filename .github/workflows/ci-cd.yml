@@ -1,199 +1,29 @@
-name: CI/CD
+name: Deploy
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
-  build:
-    name: Build & Test (Maven)
+  deploy:
+    name: Deploy (SSH)
     runs-on: ubuntu-latest
-    env:
-      SERVER_PORT: ${{ secrets.SERVER_PORT }}
-      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-      KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.KAFKA_BOOTSTRAP_SERVERS }}
-      SERVER_HOST: ${{ secrets.SERVER_HOST }}
-      SERVER_USER: ${{ secrets.SERVER_USER }}
-      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
-      VERBOSE_SSH: ${{ secrets.VERBOSE_SSH }}
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Safety scan for private keys (non-.github files)
+      - name: Ensure deploy secrets present
         run: |
-          echo "Scanning repository (excluding .github/) for private keys..."
-          set +e
-          FILES=$(git ls-files | grep -v '^.github/' | tr '\n' ' ')
-          if [ -z "$FILES" ]; then
-            echo "No files to scan"
-          else
-            # Look for files that include the BEGIN header; only inside non-.github files to avoid false positive messages
-            grep -I -n -E '-----BEGIN .*PRIVATE KEY-----' $FILES || true
-            if grep -I -q -E '-----BEGIN .*PRIVATE KEY-----' $FILES; then
-              echo "Potential private key found in the repository (outside .github). Do NOT commit private keys. Remove them and add them as GitHub secrets instead." >&2
-              grep -I -n -E '-----BEGIN .*PRIVATE KEY-----' $FILES
-              exit 1
-            fi
-          fi
-          set -e
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Decide test mode
-        run: |
-          echo "Checking for database and Kafka secrets to decide whether to run tests..."
-          if [ -n "$SPRING_DATASOURCE_URL" ] || [ -n "$DB_HOST" ] || [ -n "$POSTGRES_DB" ] || [ -n "$KAFKA_BOOTSTRAP_SERVERS" ]; then
-            echo "RUN_TESTS=true" >> $GITHUB_ENV
-          else
-            echo "RUN_TESTS=false" >> $GITHUB_ENV
-          fi
-
-      - name: 'Debug - environment presence (non-secret)'
-        if: always()
-        run: |
-          echo "Checking CI env variables presence for debugging..."
-          for v in SPRING_DATASOURCE_URL DB_HOST POSTGRES_DB KAFKA_BOOTSTRAP_SERVERS RUN_TESTS SERVER_HOST SERVER_USER SERVER_PORT SERVER_SSH_KEY VERBOSE_SSH; do
-            if [ -n "${!v}" ]; then
-              echo " - $v: SET"
-            else
-              echo " - $v: NOT SET"
-            fi
-          done
-
-      - name: Build and run tests (per module)
-        run: |
-          set -e
-          echo "Detecting modules with pom.xml files..."
-          MODULE_DIRS=$(git ls-files '*pom.xml' | xargs -n1 dirname | sort -u)
-          echo "Modules found: $MODULE_DIRS"
-          for dir in $MODULE_DIRS; do
-            # Skip root if present
-            if [ "$dir" = "." ]; then
-              echo "Skipping root directory (no POM at repo root)"
-              continue
-            fi
-            echo "Building module: $dir"
-            if [ "$RUN_TESTS" = "true" ]; then
-              echo "RUN_TESTS=true: Running full verify including tests"
-              mvn -f "$dir/pom.xml" -B -V -T 1C verify
-            else
-              echo "RUN_TESTS=false: Skipping tests and running package only"
-              mvn -f "$dir/pom.xml" -B -V -T 1C -DskipTests -DskipITs package
-            fi
-          done
-
-      - name: 'Debug - list built artifacts'
-        if: always()
-        run: |
-          echo "List of jars built (target/*.jar):"
-          for d in $(git ls-files '*pom.xml' | xargs -n1 dirname | sort -u); do
-            if [ "$d" = "." ]; then continue; fi
-            echo " - $d"
-            ls -l "$d/target" || true
-          done
-
-
-  deploy-droplet:
-    name: Deploy to Droplet
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check deploy secrets presence
-        run: |
-          echo "Checking if deployment secrets are present..."
-          if [ -z "$SERVER_SSH_KEY" ] || [ -z "$SERVER_HOST" ] || [ -z "$SERVER_USER" ]; then
-            echo "Deployment secrets are not all present. Skipping deploy. Set SERVER_SSH_KEY, SERVER_HOST, and SERVER_USER in repository secrets to enable deploy." >&2
+          if [ -z "${{ secrets.SERVER_SSH_KEY }}" ] || [ -z "${{ secrets.SERVER_HOST }}" ] || [ -z "${{ secrets.SERVER_USER }}" ]; then
+            echo "Missing deploy secrets (SERVER_SSH_KEY, SERVER_HOST, SERVER_USER). Skipping deploy."
             exit 0
-          else
-            echo "Deployment secrets found. Continuing deploy steps..."
           fi
 
-      - name: Setup SSH agent with GitHub secret
-        uses: webfactory/ssh-agent@v0.5.3
-        continue-on-error: true
-        with:
-          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
-
-      - name: Verify SSH agent has the key
-        id: verify_agent
-        run: |
-          echo "Listing SSH identities loaded into the agent (fingerprint only, no secrets will be printed)"
-          if ssh-add -l >/dev/null 2>&1; then
-            echo "agent_has_key=true" >> $GITHUB_OUTPUT
-            ssh-add -l
-          else
-            echo "agent_has_key=false" >> $GITHUB_OUTPUT
-            echo "No key loaded into the agent. We'll try a fallback (manual)."
-          fi
-
-      - name: Add droplet to known_hosts
-        run: |
-          if [ -n "$SERVER_PORT" ]; then
-            ssh-keyscan -p $SERVER_PORT -H $SERVER_HOST >> ~/.ssh/known_hosts
-          else
-            ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
-          fi
-
-      - name: 'Debug - deploy env presence (non-secret)'
-        run: |
-          echo "Debugging deploy environment variables (safe):"
-          for v in SERVER_HOST SERVER_USER SERVER_PORT SERVER_SSH_KEY VERBOSE_SSH; do
-            if [ -n "${!v}" ]; then
-              echo " - $v: SET"
-            else
-              echo " - $v: NOT SET"
-            fi
-          done
-
-      - name: 'Verbose SSH connectivity test'
-        run: |
-          echo "Running verbose SSH test (this will output debug info, do not set in PRs unless needed)..."
-          SSH_PORT_ARG=""
-          if [ -n "$SERVER_PORT" ]; then
-            SSH_PORT_ARG="-p $SERVER_PORT"
-          fi
-          ssh -vvv $SSH_PORT_ARG -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 $SERVER_USER@$SERVER_HOST 'echo "SSH OK"; whoami; hostname; id'
-
-      - name: Test SSH connectivity
-        run: |
-          echo "Testing SSH connectivity to $SERVER_HOST as $SERVER_USER"
-          SSH_PORT_ARG=""
-          if [ -n "$SERVER_PORT" ]; then
-            SSH_PORT_ARG="-p $SERVER_PORT"
-            echo "Using non-standard SSH port: $SERVER_PORT"
-          fi
-          ssh $SSH_PORT_ARG -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=10 $SERVER_USER@$SERVER_HOST \
-            'echo "SSH OK"; whoami; hostname; id; docker --version 2>/dev/null || echo "docker not found"; docker-compose --version 2>/dev/null || echo "docker-compose not found"'
-
-      - name: Deploy via SSH (appleboy/ssh-action)
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -206,26 +36,3 @@ jobs:
             cd infra/docker/
             docker-compose down
             docker-compose up -d --build
-
-      - name: 'Fallback - load private key into ssh-agent'
-        if: steps.verify_agent.outputs.agent_has_key == 'false'
-        run: |
-          echo "Attempting manual fallback load of SERVER_SSH_KEY into ssh-agent..."
-          # Start ssh-agent in case it isn't running yet
-          eval "$(ssh-agent -s)"
-          # Write secret to a temporary file (do not print it)
-          printf '%s\n' "$SERVER_SSH_KEY" > /tmp/deploy_rsa
-          chmod 600 /tmp/deploy_rsa
-          # Detect OpenSSH format and attempt to convert to PEM if needed
-          if grep -q 'BEGIN OPENSSH PRIVATE KEY' /tmp/deploy_rsa; then
-            echo 'OpenSSH key format detected. Attempting conversion to PEM format...'
-            ssh-keygen -p -f /tmp/deploy_rsa -N "" -m PEM -q || { echo 'Failed to convert OpenSSH key to PEM. If the key is passphrase-protected, remove the passphrase or use a supported format.' >&2; exit 1; }
-          fi
-          # Try to load the key
-          if ssh-add /tmp/deploy_rsa; then
-            echo "Key loaded into agent using fallback path."
-            ssh-add -l
-          else
-            echo "Fallback loading failed: the private key may be encrypted or incompatible with the runner's ssh-add. Please convert the key to PEM, remove passphrase, or use a different key format." >&2
-            exit 1
-          fi
