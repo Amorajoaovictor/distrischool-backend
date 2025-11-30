@@ -46,8 +46,8 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-              cd /var/www/distrischool-backend/ || exit 2
-
+              cd distrischool-backend/ || exit 2
+              git pull 
               # Diretório do docker compose
               cd infra/docker || exit 3
 
